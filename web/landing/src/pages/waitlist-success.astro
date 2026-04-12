@@ -1,0 +1,49 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Footer from "../components/Footer.astro";
+---
+
+<BaseLayout
+  title="You're on the list — Knowable"
+  description="Thanks for joining the Knowable waitlist. We'll email you when it's ready."
+>
+  <section class="py-24 sm:py-32">
+    <div class="max-w-lg mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <!-- Success icon -->
+      <div
+        class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-milo-50 dark:bg-milo-900/30 text-milo-500 dark:text-milo-400 mb-8"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="w-10 h-10"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+          ></path>
+        </svg>
+      </div>
+
+      <h1
+        class="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-4"
+      >
+        You're on the list!
+      </h1>
+      <p class="text-lg text-slate-600 dark:text-slate-400 mb-8">
+        We'll email you when Knowable is ready. In the meantime, tell a friend
+        who could use an AI study coach.
+      </p>
+
+      <a href="/" class="btn-primary">
+        Back to home
+      </a>
+    </div>
+  </section>
+
+  <Footer slot="footer" />
+</BaseLayout>

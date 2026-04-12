@@ -1,0 +1,9 @@
+dist/
+node_modules/
+.env
+.env.*
+*.tfstate*
+.env.tfvars
+*.tfvars
+.DS_Store
+coverage/

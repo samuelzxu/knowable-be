@@ -1,0 +1,31 @@
+---
+const year = new Date().getFullYear();
+---
+
+<footer class="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-10">
+  <div
+    class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-slate-500 dark:text-slate-400"
+  >
+    <p>
+      &copy; {year}
+      <a
+        href="/"
+        class="font-medium text-slate-700 dark:text-slate-300 hover:text-milo-400 dark:hover:text-milo-400 transition-colors"
+        >knowable.ca</a
+      >. All rights reserved.
+    </p>
+
+    <nav class="flex items-center gap-6">
+      <a
+        href="/privacy"
+        class="hover:text-slate-900 dark:hover:text-white transition-colors"
+        >Privacy Policy</a
+      >
+      <a
+        href="/terms"
+        class="hover:text-slate-900 dark:hover:text-white transition-colors"
+        >Terms of Service</a
+      >
+    </nav>
+  </div>
+</footer>

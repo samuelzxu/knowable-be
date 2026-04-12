@@ -1,0 +1,24 @@
+---
+interface Props {
+  siteKey: string;
+  callback?: string;
+  errorCallback?: string;
+  theme?: "light" | "dark" | "auto";
+}
+
+const {
+  siteKey,
+  callback = "onTurnstileCallback",
+  errorCallback = "onTurnstileError",
+  theme = "auto",
+} = Astro.props;
+---
+
+<div
+  class="cf-turnstile"
+  data-sitekey={siteKey}
+  data-callback={callback}
+  data-error-callback={errorCallback}
+  data-theme={theme}
+>
+</div>

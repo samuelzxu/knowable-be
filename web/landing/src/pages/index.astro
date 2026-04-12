@@ -1,0 +1,32 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Hero from "../components/Hero.astro";
+import Features from "../components/Features.astro";
+import WaitlistForm from "../components/WaitlistForm.astro";
+import Footer from "../components/Footer.astro";
+---
+
+<BaseLayout
+  title="Knowable — The AI coach that watches you practice"
+  description="Knowable uses macOS Desk View to coach you through math and physics problems in real time. Meet Milo — your AI tutor."
+>
+  <Hero />
+  <Features />
+
+  <!-- Waitlist section -->
+  <section id="waitlist" class="py-20 sm:py-28 bg-white dark:bg-slate-950">
+    <div class="max-w-lg mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-10">
+        <h2 class="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-4">
+          Be the first to know
+        </h2>
+        <p class="text-lg text-slate-600 dark:text-slate-400">
+          Knowable is in early development. Drop your email and we'll reach out when it's ready.
+        </p>
+      </div>
+      <WaitlistForm />
+    </div>
+  </section>
+
+  <Footer slot="footer" />
+</BaseLayout>

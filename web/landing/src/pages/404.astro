@@ -1,0 +1,24 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Footer from "../components/Footer.astro";
+---
+
+<BaseLayout
+  title="Page not found — Knowable"
+  description="The page you were looking for doesn't exist."
+>
+  <section class="py-24 sm:py-32">
+    <div class="max-w-lg mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <p class="text-8xl font-extrabold text-milo-400 mb-6">404</p>
+      <h1 class="text-3xl font-bold text-slate-900 dark:text-white mb-4">
+        Page not found
+      </h1>
+      <p class="text-lg text-slate-600 dark:text-slate-400 mb-8">
+        The page you were looking for doesn't exist or has moved.
+      </p>
+      <a href="/" class="btn-primary">Back to home</a>
+    </div>
+  </section>
+
+  <Footer slot="footer" />
+</BaseLayout>

@@ -1,0 +1,45 @@
+---
+const navLinks = [
+  { href: "/", label: "Home" },
+  { href: "/privacy", label: "Privacy" },
+  { href: "/terms", label: "Terms" },
+];
+
+const currentPath = Astro.url.pathname;
+---
+
+<header
+  class="sticky top-0 z-50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800"
+>
+  <nav
+    class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between"
+  >
+    <a
+      href="/"
+      class="flex items-center gap-2 font-bold text-lg text-slate-900 dark:text-white hover:text-milo-400 dark:hover:text-milo-400 transition-colors"
+    >
+      <img src="/favicon.svg" alt="" width="28" height="28" class="rounded-full" />
+      Knowable
+    </a>
+
+    <ul class="flex items-center gap-1">
+      {
+        navLinks.map(({ href, label }) => (
+          <li>
+            <a
+              href={href}
+              class:list={[
+                "px-3 py-1.5 rounded-lg text-sm font-medium transition-colors",
+                currentPath === href
+                  ? "text-milo-500 dark:text-milo-400 bg-milo-50 dark:bg-milo-900/30"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800",
+              ]}
+            >
+              {label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+</header>
