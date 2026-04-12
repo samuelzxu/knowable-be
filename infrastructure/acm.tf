@@ -11,3 +11,22 @@ resource "aws_acm_certificate" "landing" {
     create_before_destroy = true
   }
 }
+
+# Blocks `terraform apply` until the ACM cert has been validated. On first
+# apply, this resource will poll for up to 60 minutes while YOU add the DNS
+# CNAMEs to your registrar. Get them with:
+#   terraform output -json acm_validation_records
+# Then add each record (name + value) at your registrar. Apple usually
+# validates within 2-5 minutes once DNS has propagated.
+#
+# CloudFront's viewer_certificate references this resource's output, so
+# CloudFront creation is automatically gated on validation success.
+resource "aws_acm_certificate_validation" "landing" {
+  provider = aws.us_east_1
+
+  certificate_arn = aws_acm_certificate.landing.arn
+
+  timeouts {
+    create = "60m"
+  }
+}

@@ -1,60 +1,235 @@
 ---
-const features = [
-  {
-    title: "Live coaching from Desk View",
-    description:
-      "Milo watches your paper through your Mac's Desk View camera. When you're stuck, it offers a targeted hint — not the answer — to guide you forward.",
-    icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
-      <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
-    </svg>`,
-  },
-  {
-    title: "On-device privacy — nothing leaves your Mac unless you ask",
-    description:
-      "Frame analysis, OCR, and stuck detection run entirely on your Mac using Apple's Vision framework. Only the extracted text of your problem — never audio, video, or pixels — is sent to generate a hint.",
-    icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
-    </svg>`,
-  },
-  {
-    title: "Track progress across real tests",
-    description:
-      "Knowable logs your sessions and scores so you can see where you struggled and how you improved. Review your notebook pages and coach comments anytime.",
-    icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
-    </svg>`,
-  },
-];
+// Features — alternating left/right layout with CSS illustrations
 ---
 
-<section id="features" class="py-20 sm:py-28 bg-slate-50 dark:bg-slate-900">
-  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="text-center mb-16">
-      <h2 class="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-4">
-        How Knowable works
-      </h2>
-      <p class="text-lg text-slate-600 dark:text-slate-400 max-w-xl mx-auto">
-        Built for the way students actually study — paper, pencil, and the occasional frustrating stuck point.
+<section id="features" class="py-20 sm:py-28 bg-cream-100 dark:bg-warm-800/40">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+
+    <div class="text-center mb-20 reveal">
+      <p class="section-label">
+        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 12 12"><circle cx="6" cy="6" r="6"/></svg>
+        What makes it different
       </p>
+      <h2 class="font-display text-4xl sm:text-5xl text-warm-900 dark:text-cream-50 mb-4">
+        Designed for how<br /><em class="text-milo-400 not-italic">students actually learn</em>
+      </h2>
     </div>
 
-    <div class="grid sm:grid-cols-3 gap-8">
-      {
-        features.map((feature) => (
-          <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
-            <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-milo-50 dark:bg-milo-900/40 text-milo-500 dark:text-milo-400 mb-4">
-              <Fragment set:html={feature.icon} />
-            </div>
-            <h3 class="font-semibold text-slate-900 dark:text-white mb-2 leading-snug">
-              {feature.title}
-            </h3>
-            <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-              {feature.description}
-            </p>
+    <div class="space-y-24">
+
+      <!-- Feature 1: Live coaching (text left, illustration right) -->
+      <div class="reveal grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+        <div class="lg:text-left">
+          <div class="inline-flex items-center gap-2 rounded-full bg-milo-50 dark:bg-milo-900/20 border border-milo-200 dark:border-milo-800 px-3 py-1 text-xs font-semibold text-milo-600 dark:text-milo-400 mb-5">
+            Live coaching
           </div>
-        ))
-      }
+          <h3 class="font-display text-3xl sm:text-4xl text-warm-900 dark:text-cream-50 mb-5 leading-tight">
+            Milo sees your paper,<br />not just your screen
+          </h3>
+          <p class="text-warm-600 dark:text-warm-400 leading-relaxed mb-6">
+            Traditional AI tutors work from typed text. Milo reads your actual handwriting through your Mac's camera using Desk View, noticing when your pen stops or when you erase, and using Apple's Vision framework to understand what you write.
+          </p>
+          <ul class="space-y-3">
+            {[
+              "Detects pen inactivity and erasing in real time",
+              "Reads handwritten math equations via on-device OCR",
+              "Speaks hints aloud so you stay in your flow",
+              "Never gives the answer — always a guiding question",
+            ].map((item) => (
+              <li class="flex items-start gap-3 text-sm text-warm-600 dark:text-warm-400">
+                <svg class="w-5 h-5 text-milo-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd"/>
+                </svg>
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <!-- Illustration: coaching flow -->
+        <div class="relative flex items-center justify-center" aria-hidden="true">
+          <div class="w-full max-w-sm mx-auto">
+            <div class="relative rounded-3xl p-6 border border-warm-200 dark:border-warm-700 shadow-xl bg-white dark:bg-warm-800">
+              <!-- Top bar -->
+              <div class="flex items-center justify-between mb-5">
+                <div class="flex items-center gap-2">
+                  <img src="/favicon.svg" alt="Milo" width="28" height="28" class="rounded-lg" />
+                  <span class="text-sm font-semibold text-warm-800 dark:text-cream-100">Milo is following along</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <div class="w-2 h-2 rounded-full bg-sage-400 animate-pulse"></div>
+                  <span class="text-xs text-sage-600 dark:text-sage-400 font-medium">Live</span>
+                </div>
+              </div>
+
+              <!-- Paper preview area -->
+              <div class="rounded-2xl bg-cream-100 dark:bg-warm-900 p-4 mb-4 border border-warm-200 dark:border-warm-700">
+                <div class="space-y-2">
+                  <div class="text-xs font-semibold text-warm-500 mb-2">Detected on paper:</div>
+                  <div style="font-family: Georgia, serif; font-size: 13px;" class="text-warm-800 dark:text-cream-200">
+                    ∫₀² x² dx = [x³/3]₀²
+                  </div>
+                  <div style="font-family: Georgia, serif; font-size: 13px;" class="text-warm-600 dark:text-warm-400">
+                    = 8/3 - 0 = <span class="text-warm-400 animate-pulse">|</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Hint -->
+              <div class="bg-milo-50 dark:bg-milo-900/30 rounded-2xl p-4 border border-milo-200 dark:border-milo-800">
+                <div class="flex items-start gap-3">
+                  <img src="/favicon.svg" alt="Milo" width="28" height="28" class="rounded-lg flex-shrink-0" />
+                  <div>
+                    <div class="text-xs font-semibold text-milo-600 dark:text-milo-400 mb-1">Milo says:</div>
+                    <p class="text-sm text-warm-700 dark:text-warm-300 leading-relaxed">
+                      You've got the right setup. What happens when you substitute the upper limit into your antiderivative?
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature 2: Privacy (illustration left, text right) -->
+      <div class="reveal grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+        <!-- Illustration: privacy flow -->
+        <div class="order-2 lg:order-1 relative flex items-center justify-center" aria-hidden="true">
+          <div class="w-full max-w-sm mx-auto">
+            <div class="relative rounded-3xl p-6 border border-warm-200 dark:border-warm-700 shadow-xl bg-white dark:bg-warm-800">
+              <div class="text-center mb-5">
+                <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-sage-50 dark:bg-sage-700/20 mb-3">
+                  <svg class="w-7 h-7 text-sage-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
+                  </svg>
+                </div>
+                <div class="text-sm font-semibold text-warm-800 dark:text-cream-100">What stays on your Mac</div>
+              </div>
+
+              <!-- Data flow diagram -->
+              <div class="space-y-2">
+                {[
+                  { label: "Camera feed", stays: true, icon: "📷" },
+                  { label: "Audio recording", stays: true, icon: "🎤" },
+                  { label: "Notebook pixels", stays: true, icon: "🖼️" },
+                  { label: "Problem text (OCR)", stays: false, icon: "📝" },
+                ].map(({ label, stays, icon }) => (
+                  <div class={`flex items-center justify-between px-4 py-2.5 rounded-xl border text-sm ${stays ? "bg-sage-50 dark:bg-sage-900/20 border-sage-200 dark:border-sage-800" : "bg-milo-50 dark:bg-milo-900/20 border-milo-200 dark:border-milo-800"}`}>
+                    <span class="flex items-center gap-2 text-warm-700 dark:text-warm-300">
+                      <span>{icon}</span> {label}
+                    </span>
+                    <span class={`text-xs font-semibold ${stays ? "text-sage-600 dark:text-sage-400" : "text-milo-500"}`}>
+                      {stays ? "On-device ✓" : "Sent for hint"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <p class="text-xs text-warm-400 dark:text-warm-500 text-center mt-4">
+                Apple Vision framework handles all image analysis locally.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="order-1 lg:order-2 lg:text-left">
+          <div class="inline-flex items-center gap-2 rounded-full bg-sage-50 dark:bg-sage-900/20 border border-sage-200 dark:border-sage-800 px-3 py-1 text-xs font-semibold text-sage-600 dark:text-sage-400 mb-5">
+            Privacy-first
+          </div>
+          <h3 class="font-display text-3xl sm:text-4xl text-warm-900 dark:text-cream-50 mb-5 leading-tight">
+            Your child's work<br />stays on their Mac
+          </h3>
+          <p class="text-warm-600 dark:text-warm-400 leading-relaxed mb-6">
+            We built Knowable with privacy as a non-negotiable. The camera feed, audio, and raw notebook images never leave the device. Apple's Vision framework does all the heavy lifting locally — only the extracted text of a problem is ever sent to generate a hint.
+          </p>
+          <ul class="space-y-3">
+            {[
+              "No video or audio stored or transmitted",
+              "On-device OCR via Apple Vision framework",
+              "No account required to start a session",
+              "Open about exactly what data is shared",
+            ].map((item) => (
+              <li class="flex items-start gap-3 text-sm text-warm-600 dark:text-warm-400">
+                <svg class="w-5 h-5 text-sage-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd"/>
+                </svg>
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      <!-- Feature 3: Progress tracking (text left, illustration right) -->
+      <div class="reveal grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+        <div class="lg:text-left">
+          <div class="inline-flex items-center gap-2 rounded-full bg-cream-200 dark:bg-warm-700/50 border border-warm-200 dark:border-warm-600 px-3 py-1 text-xs font-semibold text-warm-600 dark:text-warm-400 mb-5">
+            Progress tracking
+          </div>
+          <h3 class="font-display text-3xl sm:text-4xl text-warm-900 dark:text-cream-50 mb-5 leading-tight">
+            See where they struggled.<br /><em class="text-milo-400 not-italic">See them improve.</em>
+          </h3>
+          <p class="text-warm-600 dark:text-warm-400 leading-relaxed mb-6">
+            Every session is logged. Parents and students can review which concepts needed the most hints, how performance changed over time, and replay the Milo coaching moments. Real signal, not just a grade.
+          </p>
+          <ul class="space-y-3">
+            {[
+              "Session-by-session progress timeline",
+              "Topic breakdown — which concepts need work",
+              "Hint history with notebook page context",
+              "Shareable with teachers for informed check-ins",
+            ].map((item) => (
+              <li class="flex items-start gap-3 text-sm text-warm-600 dark:text-warm-400">
+                <svg class="w-5 h-5 text-milo-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd"/>
+                </svg>
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <!-- Illustration: progress dashboard -->
+        <div class="relative flex items-center justify-center" aria-hidden="true">
+          <div class="w-full max-w-sm mx-auto">
+            <div class="relative rounded-3xl p-6 border border-warm-200 dark:border-warm-700 shadow-xl bg-white dark:bg-warm-800">
+              <div class="flex items-center justify-between mb-5">
+                <div class="text-sm font-semibold text-warm-800 dark:text-cream-100">This week</div>
+                <div class="text-xs text-warm-400 dark:text-warm-500">Apr 7–13</div>
+              </div>
+
+              <!-- Bar chart CSS -->
+              <div class="flex items-end gap-2 h-24 mb-4">
+                {[40, 65, 55, 80, 70, 90, 75].map((h, i) => (
+                  <div class="flex-1 flex flex-col items-center gap-1">
+                    <div
+                      class="w-full rounded-t-lg"
+                      style={`height: ${h}%; background: ${i === 5 ? "#E8704A" : "#f0a383"}; opacity: ${i === 5 ? 1 : 0.6};`}
+                    ></div>
+                    <span class="text-[9px] text-warm-400">{["M","T","W","T","F","S","S"][i]}</span>
+                  </div>
+                ))}
+              </div>
+
+              <!-- Stats row -->
+              <div class="grid grid-cols-3 gap-3 pt-3 border-t border-warm-100 dark:border-warm-700">
+                {[
+                  { label: "Sessions", value: "7" },
+                  { label: "Hints received", value: "23" },
+                  { label: "Topics covered", value: "4" },
+                ].map(({ label, value }) => (
+                  <div class="text-center">
+                    <div class="text-lg font-bold text-warm-900 dark:text-cream-100">{value}</div>
+                    <div class="text-[10px] text-warm-400 dark:text-warm-500">{label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </section>

@@ -7,41 +7,45 @@ import Footer from "../components/Footer.astro";
   title="You're on the list — Knowable"
   description="Thanks for joining the Knowable waitlist. We'll email you when it's ready."
 >
-  <section class="py-24 sm:py-32">
+  <section class="py-24 sm:py-32 bg-cream-50 dark:bg-warm-900 relative overflow-hidden">
+    <!-- Background glow -->
+    <div class="absolute inset-0 -z-10" aria-hidden="true">
+      <div class="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] rounded-full opacity-10"
+        style="background: radial-gradient(ellipse, #E8704A 0%, transparent 70%);"></div>
+    </div>
+
     <div class="max-w-lg mx-auto px-4 sm:px-6 lg:px-8 text-center">
-      <!-- Success icon -->
+      <!-- Milo success icon -->
       <div
-        class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-milo-50 dark:bg-milo-900/30 text-milo-500 dark:text-milo-400 mb-8"
+        class="inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-milo-50 dark:bg-milo-900/30 border border-milo-200 dark:border-milo-800 mb-8 shadow-lg shadow-milo-400/10"
+        style="animation: float-up-down 5s ease-in-out infinite;"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke-width="1.5"
-          stroke="currentColor"
-          class="w-10 h-10"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-          ></path>
-        </svg>
+        <img src="/favicon.svg" alt="" width="56" height="56" aria-hidden="true" />
       </div>
 
-      <h1
-        class="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-4"
-      >
+      <h1 class="font-display text-4xl sm:text-5xl text-warm-900 dark:text-cream-50 mb-5">
         You're on the list!
       </h1>
-      <p class="text-lg text-slate-600 dark:text-slate-400 mb-8">
-        We'll email you when Knowable is ready. In the meantime, tell a friend
-        who could use an AI study coach.
+      <p class="text-lg text-warm-600 dark:text-warm-400 mb-3 leading-relaxed">
+        Milo is excited to meet you. We'll send one email when Knowable is ready for early access — and as a founding member, you'll get a discount.
+      </p>
+      <p class="text-warm-400 dark:text-warm-500 mb-10 text-sm">
+        In the meantime, tell a friend who could use a patient AI study coach. 👋
       </p>
 
-      <a href="/" class="btn-primary">
-        Back to home
-      </a>
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a href="/" class="btn-primary">
+          Back to home
+        </a>
+        <a
+          href="https://twitter.com/intent/tweet?text=Just%20joined%20the%20Knowable%20waitlist%20—%20an%20AI%20coach%20that%20reads%20your%20notebook%20and%20gives%20Socratic%20hints.%20knowable.ca"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn-secondary"
+        >
+          Share on X
+        </a>
+      </div>
     </div>
   </section>
 

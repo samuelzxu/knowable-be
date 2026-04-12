@@ -1,0 +1,74 @@
+---
+const faqs = [
+  {
+    q: "Is my child's data safe?",
+    a: "Yes. Knowable is built privacy-first. The camera feed, audio, and raw notebook images never leave your Mac. Apple's Vision framework processes all images on-device. Only the extracted text of a math or physics problem is ever sent to generate a hint — no names, no personal information, no video.",
+  },
+  {
+    q: "What do I need to use Knowable?",
+    a: "Just a Mac running macOS Ventura or later. Knowable uses your Mac's built-in camera in Desk View mode to see your notebook — no extra hardware required. Place your notebook on your desk, open the app, and you're ready to go.",
+  },
+  {
+    q: "What subjects does it cover?",
+    a: "Right now, Knowable is focused on high school math and physics — the subjects where students most often get stuck on multi-step problems. We're working on expanding to chemistry, calculus, and other STEM subjects based on waitlist feedback.",
+  },
+  {
+    q: "How much will it cost?",
+    a: "We haven't finalized pricing, but our goal is to make Knowable far more affordable than traditional tutoring. Early access members on the waitlist will get a discount and be the first to know when pricing is announced.",
+  },
+  {
+    q: "Does it just give answers?",
+    a: "No — and this is the core of what Milo does. Every hint is a Socratic question designed to guide you toward the answer, not to give it to you. Milo is built on the research principle that students learn best when they discover the answer themselves, with just enough nudging to get unstuck.",
+  },
+  {
+    q: "What if my child doesn't want help?",
+    a: "Milo only speaks up when it detects that you're stuck — no pen movement for a while, erasing, or an explicit voice cue like 'Milo, help.' It's designed to be unobtrusive. Students who want to work independently can ignore it or pause it entirely.",
+  },
+];
+---
+
+<section id="faq" class="py-20 sm:py-28 bg-cream-100 dark:bg-warm-800/40">
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+
+    <div class="text-center mb-14 reveal">
+      <p class="section-label">
+        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 12 12"><circle cx="6" cy="6" r="6"/></svg>
+        Common questions
+      </p>
+      <h2 class="font-display text-4xl sm:text-5xl text-warm-900 dark:text-cream-50 mb-4">
+        Things people ask us
+      </h2>
+    </div>
+
+    <div class="space-y-3 reveal reveal-delay-1">
+      {faqs.map(({ q, a }, i) => (
+        <details class="faq-item group bg-white dark:bg-warm-800 rounded-2xl border border-warm-200 dark:border-warm-700 overflow-hidden transition-all duration-200 hover:border-milo-300 dark:hover:border-milo-700">
+          <summary class="flex items-center justify-between gap-4 px-6 py-5 cursor-pointer select-none">
+            <span class="font-semibold text-warm-900 dark:text-cream-100 text-[15px] leading-snug pr-4">{q}</span>
+            <div class="flex-shrink-0 w-7 h-7 rounded-full bg-warm-100 dark:bg-warm-700 flex items-center justify-center transition-transform duration-300 group-open:rotate-45">
+              <svg class="w-3.5 h-3.5 text-warm-600 dark:text-warm-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+              </svg>
+            </div>
+          </summary>
+          <div class="px-6 pb-5">
+            <div class="h-px bg-warm-100 dark:bg-warm-700 mb-4"></div>
+            <p class="text-warm-600 dark:text-warm-400 text-sm leading-relaxed">{a}</p>
+          </div>
+        </details>
+      ))}
+    </div>
+
+    <!-- Still have questions -->
+    <div class="mt-12 text-center reveal reveal-delay-2">
+      <p class="text-warm-500 dark:text-warm-400 mb-3">Still have questions?</p>
+      <a
+        href="mailto:hello@knowable.ca"
+        class="text-milo-500 dark:text-milo-400 font-semibold hover:text-milo-600 dark:hover:text-milo-300 transition-colors underline underline-offset-4 decoration-milo-300 dark:decoration-milo-700"
+      >
+        Email us at hello@knowable.ca
+      </a>
+    </div>
+
+  </div>
+</section>

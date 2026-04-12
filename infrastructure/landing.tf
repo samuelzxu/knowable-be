@@ -32,6 +32,33 @@ resource "aws_cloudfront_origin_access_control" "landing" {
   signing_protocol                  = "sigv4"
 }
 
+# Rewrites subpath requests to append /index.html so Astro's directory-based
+# output (e.g. privacy/index.html) is served when the user visits /privacy.
+# CloudFront's default_root_object only works for the root / path.
+resource "aws_cloudfront_function" "url_rewrite" {
+  name    = "knowable-url-rewrite"
+  runtime = "cloudfront-js-2.0"
+  comment = "Append /index.html to directory-like paths for Astro static output"
+  publish = true
+  code    = <<-EOF
+    function handler(event) {
+      var request = event.request;
+      var uri = request.uri;
+
+      // If URI ends with / append index.html
+      if (uri.endsWith('/')) {
+        request.uri += 'index.html';
+      }
+      // If URI doesn't have a file extension, assume it's a directory and append /index.html
+      else if (!uri.includes('.')) {
+        request.uri += '/index.html';
+      }
+
+      return request;
+    }
+  EOF
+}
+
 resource "aws_cloudfront_distribution" "landing" {
   enabled             = true
   is_ipv6_enabled     = true
@@ -64,6 +91,11 @@ resource "aws_cloudfront_distribution" "landing" {
     min_ttl     = 0
     default_ttl = 3600
     max_ttl     = 86400
+
+    function_association {
+      event_type   = "viewer-request"
+      function_arn = aws_cloudfront_function.url_rewrite.arn
+    }
   }
 
   custom_error_response {
@@ -87,7 +119,9 @@ resource "aws_cloudfront_distribution" "landing" {
   }
 
   viewer_certificate {
-    acm_certificate_arn      = aws_acm_certificate.landing.arn
+    # Reference the validation resource (not the raw cert) so CloudFront
+    # creation is gated on the cert being validated and issued.
+    acm_certificate_arn      = aws_acm_certificate_validation.landing.certificate_arn
     ssl_support_method       = "sni-only"
     minimum_protocol_version = "TLSv1.2_2021"
   }

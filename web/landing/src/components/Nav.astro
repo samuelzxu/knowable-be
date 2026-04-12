@@ -1,39 +1,36 @@
 ---
 const navLinks = [
-  { href: "/", label: "Home" },
+  { href: "/#how-it-works", label: "How it works" },
+  { href: "/#for-you", label: "For you" },
   { href: "/privacy", label: "Privacy" },
-  { href: "/terms", label: "Terms" },
 ];
 
 const currentPath = Astro.url.pathname;
 ---
 
 <header
-  class="sticky top-0 z-50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800"
+  class="sticky top-0 z-50 bg-cream-50/90 dark:bg-warm-900/90 backdrop-blur-md border-b border-warm-200/60 dark:border-warm-700/60 transition-colors"
 >
   <nav
-    class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between"
+    class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between"
   >
+    <!-- Logo -->
     <a
       href="/"
-      class="flex items-center gap-2 font-bold text-lg text-slate-900 dark:text-white hover:text-milo-400 dark:hover:text-milo-400 transition-colors"
+      class="flex items-center gap-2.5 font-semibold text-lg text-warm-900 dark:text-cream-50 hover:text-milo-400 dark:hover:text-milo-400 transition-colors"
     >
-      <img src="/favicon.svg" alt="" width="28" height="28" class="rounded-full" />
-      Knowable
+      <img src="/favicon.svg" alt="Milo the cat" width="32" height="32" class="rounded-xl shadow-sm" />
+      <span class="font-display italic">Knowable</span>
     </a>
 
-    <ul class="flex items-center gap-1">
+    <!-- Desktop nav -->
+    <ul class="hidden sm:flex items-center gap-1">
       {
         navLinks.map(({ href, label }) => (
           <li>
             <a
               href={href}
-              class:list={[
-                "px-3 py-1.5 rounded-lg text-sm font-medium transition-colors",
-                currentPath === href
-                  ? "text-milo-500 dark:text-milo-400 bg-milo-50 dark:bg-milo-900/30"
-                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800",
-              ]}
+              class="px-4 py-2 rounded-xl text-sm font-medium text-warm-600 dark:text-warm-400 hover:text-warm-900 dark:hover:text-cream-50 hover:bg-warm-100 dark:hover:bg-warm-800 transition-all duration-150"
             >
               {label}
             </a>
@@ -41,5 +38,82 @@ const currentPath = Astro.url.pathname;
         ))
       }
     </ul>
+
+    <!-- Desktop CTA -->
+    <a
+      href="/#waitlist"
+      class="hidden sm:inline-flex btn-primary text-sm px-5 py-2.5"
+    >
+      Get early access
+    </a>
+
+    <!-- Mobile hamburger -->
+    <button
+      id="mobile-menu-btn"
+      aria-label="Open menu"
+      aria-expanded="false"
+      class="sm:hidden flex flex-col gap-1.5 p-2 rounded-lg hover:bg-warm-100 dark:hover:bg-warm-800 transition-colors"
+    >
+      <span class="menu-bar block w-5 h-0.5 bg-warm-700 dark:bg-warm-300 rounded-full transition-all duration-300"></span>
+      <span class="menu-bar block w-5 h-0.5 bg-warm-700 dark:bg-warm-300 rounded-full transition-all duration-300"></span>
+      <span class="menu-bar block w-5 h-0.5 bg-warm-700 dark:bg-warm-300 rounded-full transition-all duration-300"></span>
+    </button>
   </nav>
+
+  <!-- Mobile menu -->
+  <div
+    id="mobile-menu"
+    class="sm:hidden hidden border-t border-warm-200/60 dark:border-warm-700/60 bg-cream-50 dark:bg-warm-900 px-4 py-4"
+  >
+    <ul class="flex flex-col gap-1 mb-4">
+      {
+        navLinks.map(({ href, label }) => (
+          <li>
+            <a
+              href={href}
+              class="block px-4 py-3 rounded-xl text-sm font-medium text-warm-700 dark:text-warm-300 hover:text-warm-900 dark:hover:text-cream-50 hover:bg-warm-100 dark:hover:bg-warm-800 transition-all"
+            >
+              {label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+    <a href="/#waitlist" class="btn-primary w-full text-sm text-center">
+      Get early access
+    </a>
+  </div>
 </header>
+
+<script>
+  const btn = document.getElementById("mobile-menu-btn");
+  const menu = document.getElementById("mobile-menu");
+  const bars = document.querySelectorAll(".menu-bar");
+
+  btn?.addEventListener("click", () => {
+    const isOpen = !menu?.classList.contains("hidden");
+    menu?.classList.toggle("hidden", isOpen);
+    btn.setAttribute("aria-expanded", String(!isOpen));
+
+    if (!isOpen) {
+      bars[0]?.classList.add("rotate-45", "translate-y-2");
+      bars[1]?.classList.add("opacity-0");
+      bars[2]?.classList.add("-rotate-45", "-translate-y-2");
+    } else {
+      bars[0]?.classList.remove("rotate-45", "translate-y-2");
+      bars[1]?.classList.remove("opacity-0");
+      bars[2]?.classList.remove("-rotate-45", "-translate-y-2");
+    }
+  });
+
+  // Close on link click
+  menu?.querySelectorAll("a").forEach((a) => {
+    a.addEventListener("click", () => {
+      menu.classList.add("hidden");
+      btn?.setAttribute("aria-expanded", "false");
+      bars[0]?.classList.remove("rotate-45", "translate-y-2");
+      bars[1]?.classList.remove("opacity-0");
+      bars[2]?.classList.remove("-rotate-45", "-translate-y-2");
+    });
+  });
+</script>

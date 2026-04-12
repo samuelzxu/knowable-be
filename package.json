@@ -8,6 +8,8 @@
   },
   "scripts": {
     "build": "node build.mjs",
+    "package": "node package-lambdas.mjs",
+    "build:lambdas": "npm run build && npm run package",
     "test": "vitest run",
     "dev": "tsx src/local/server.ts",
     "typecheck": "tsc --noEmit"
@@ -22,12 +24,14 @@
     "express": "^4.21.2"
   },
   "devDependencies": {
+    "@types/adm-zip": "^0.5.8",
     "@types/aws-lambda": "^8.10.161",
     "@types/express": "^4.17.21",
     "@types/node": "^22.13.10",
     "@typescript-eslint/eslint-plugin": "^8.26.1",
     "@typescript-eslint/parser": "^8.26.1",
     "@vitest/coverage-v8": "^3.0.8",
+    "adm-zip": "^0.5.17",
     "esbuild": "^0.25.1",
     "eslint": "^9.22.0",
     "tsx": "^4.19.3",

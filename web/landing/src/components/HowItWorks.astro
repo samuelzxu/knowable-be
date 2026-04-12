@@ -1,0 +1,144 @@
+---
+// How it works — 3-step visual walkthrough with connecting lines
+---
+
+<section id="how-it-works" class="py-20 sm:py-28 bg-cream-50 dark:bg-warm-900">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+
+    <div class="text-center mb-16 reveal">
+      <p class="section-label">
+        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 12 12"><circle cx="6" cy="6" r="6"/></svg>
+        Simple setup
+      </p>
+      <h2 class="font-display text-4xl sm:text-5xl text-warm-900 dark:text-cream-50 mb-4">
+        Up and running in<br /><em class="text-milo-400 not-italic">three minutes</em>
+      </h2>
+      <p class="text-lg text-warm-500 dark:text-warm-400 max-w-xl mx-auto leading-relaxed">
+        No special equipment. No complicated setup. Just your Mac and your notebook.
+      </p>
+    </div>
+
+    <!-- Steps -->
+    <div class="relative">
+      <!-- Connecting line (desktop) — aligned with the center of the step number bubbles -->
+      <!-- The number bubbles are 56px (h-14) tall with mb-6 (24px) margin. The bubble center is at ~28px from the top of each grid cell. -->
+      <div class="hidden lg:block absolute top-7 left-0 right-0 h-px z-0" aria-hidden="true">
+        <div class="mx-auto" style="width: 60%; max-width: 500px;">
+          <div class="w-full h-px" style="background: repeating-linear-gradient(to right, #E8704A 0, #E8704A 6px, transparent 6px, transparent 14px); opacity: 0.4;"></div>
+        </div>
+      </div>
+
+      <div class="grid lg:grid-cols-3 gap-8 lg:gap-12">
+
+        <!-- Step 1 -->
+        <div class="reveal reveal-delay-1 flex flex-col items-center lg:items-start text-center lg:text-left">
+          <!-- Number bubble -->
+          <div class="relative mb-6">
+            <div class="w-14 h-14 rounded-2xl bg-milo-400 flex items-center justify-center shadow-lg shadow-milo-400/30 text-white font-display text-2xl font-bold relative z-10">
+              1
+            </div>
+            <div class="absolute inset-0 rounded-2xl bg-milo-400 blur-md opacity-30 scale-110"></div>
+          </div>
+
+          <!-- Icon illustration -->
+          <div class="w-full max-w-[220px] mx-auto lg:mx-0 mb-6 rounded-2xl overflow-hidden border border-warm-200 dark:border-warm-700 bg-cream-100 dark:bg-warm-800 p-5 aspect-[4/3] flex items-center justify-center">
+            <!-- Mac with Desk View CSS illustration -->
+            <div class="flex flex-col items-center gap-2">
+              <!-- Mac screen -->
+              <div class="w-24 h-16 rounded-lg border-2 border-warm-400 dark:border-warm-500 bg-warm-100 dark:bg-warm-700 flex items-center justify-center relative">
+                <div class="w-3 h-3 rounded-full bg-milo-400 animate-pulse"></div>
+                <!-- Camera dot at top -->
+                <div class="absolute top-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-sage-400"></div>
+              </div>
+              <!-- Mac stand -->
+              <div class="w-10 h-1.5 rounded-b bg-warm-300 dark:border-warm-600"></div>
+              <!-- Desk View label -->
+              <div class="text-[8px] font-semibold text-milo-500 whitespace-nowrap">Desk View active</div>
+              <!-- Notebook below -->
+              <div class="w-16 h-10 rounded border border-warm-300 dark:border-warm-600 bg-white dark:bg-warm-900 flex items-center justify-center mt-1">
+                <div class="space-y-1">
+                  <div class="w-10 h-0.5 bg-blue-200 rounded-full"></div>
+                  <div class="w-8 h-0.5 bg-blue-200 rounded-full"></div>
+                  <div class="w-10 h-0.5 bg-blue-200 rounded-full"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <h3 class="text-xl font-semibold text-warm-900 dark:text-cream-100 mb-2">Open Desk View</h3>
+          <p class="text-warm-500 dark:text-warm-400 text-sm leading-relaxed max-w-xs mx-auto lg:mx-0">
+            Place your notebook on your desk. Open Knowable on your Mac — it uses your Mac's built-in camera in Desk View mode to see your paper. No extra devices needed.
+          </p>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="reveal reveal-delay-2 flex flex-col items-center lg:items-start text-center lg:text-left">
+          <div class="relative mb-6">
+            <div class="w-14 h-14 rounded-2xl bg-milo-400 flex items-center justify-center shadow-lg shadow-milo-400/30 text-white font-display text-2xl font-bold relative z-10">
+              2
+            </div>
+            <div class="absolute inset-0 rounded-2xl bg-milo-400 blur-md opacity-30 scale-110"></div>
+          </div>
+
+          <div class="w-full max-w-[220px] mx-auto lg:mx-0 mb-6 rounded-2xl overflow-hidden border border-warm-200 dark:border-warm-700 bg-cream-100 dark:bg-warm-800 p-5 aspect-[4/3] flex items-center justify-center">
+            <!-- Notebook writing CSS illustration -->
+            <div class="w-full">
+              <div class="bg-white dark:bg-warm-900 rounded-lg p-3 shadow-sm border border-warm-200 dark:border-warm-600">
+                <div class="space-y-1.5">
+                  {[1,2,3].map(() => (
+                    <div class="h-1.5 bg-blue-100 dark:bg-blue-900/40 rounded-full"></div>
+                  ))}
+                  <div class="flex items-center gap-2 pt-1">
+                    <div class="h-1.5 w-16 bg-warm-300 dark:bg-warm-600 rounded-full"></div>
+                    <div class="h-1.5 w-8 bg-milo-300/60 rounded-full"></div>
+                  </div>
+                  <div style="font-family: Georgia, serif; font-size: 10px;" class="text-warm-700 dark:text-warm-300 pt-0.5">
+                    v² = u² + 2as
+                  </div>
+                </div>
+              </div>
+              <div class="text-center mt-2 text-[10px] text-warm-400 dark:text-warm-500">Milo is following along…</div>
+            </div>
+          </div>
+
+          <h3 class="text-xl font-semibold text-warm-900 dark:text-cream-100 mb-2">Start practicing</h3>
+          <p class="text-warm-500 dark:text-warm-400 text-sm leading-relaxed max-w-xs mx-auto lg:mx-0">
+            Work through problems in your physical notebook, just like you always have. Milo follows along through the camera, reading your handwriting in real time.
+          </p>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="reveal reveal-delay-3 flex flex-col items-center lg:items-start text-center lg:text-left">
+          <div class="relative mb-6">
+            <div class="w-14 h-14 rounded-2xl bg-milo-400 flex items-center justify-center shadow-lg shadow-milo-400/30 text-white font-display text-2xl font-bold relative z-10">
+              3
+            </div>
+            <div class="absolute inset-0 rounded-2xl bg-milo-400 blur-md opacity-30 scale-110"></div>
+          </div>
+
+          <div class="w-full max-w-[220px] mx-auto lg:mx-0 mb-6 rounded-2xl overflow-hidden border border-warm-200 dark:border-warm-700 bg-cream-100 dark:bg-warm-800 p-5 aspect-[4/3] flex items-center justify-center">
+            <!-- Hint bubble CSS illustration -->
+            <div class="w-full space-y-2">
+              <div class="bg-milo-400 rounded-2xl rounded-br-sm p-3 shadow-sm">
+                <p class="text-white text-[10px] leading-relaxed">
+                  Think about what "net force" means. What forces are acting on the object?
+                </p>
+              </div>
+              <div class="flex items-center gap-2 pl-2">
+                <img src="/favicon.svg" alt="Milo" width="24" height="24" class="rounded-full" />
+                <span class="text-[9px] font-medium text-milo-500">Milo</span>
+              </div>
+            </div>
+          </div>
+
+          <h3 class="text-xl font-semibold text-warm-900 dark:text-cream-100 mb-2">Milo coaches you</h3>
+          <p class="text-warm-500 dark:text-warm-400 text-sm leading-relaxed max-w-xs mx-auto lg:mx-0">
+            When you're stuck — no pen movement, erasing, or a voice cue — Milo speaks a Socratic hint aloud and shows it on screen. You find the answer yourself.
+          </p>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</section>

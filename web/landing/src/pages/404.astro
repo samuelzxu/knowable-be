@@ -7,16 +7,40 @@ import Footer from "../components/Footer.astro";
   title="Page not found — Knowable"
   description="The page you were looking for doesn't exist."
 >
-  <section class="py-24 sm:py-32">
+  <section class="py-24 sm:py-32 bg-cream-50 dark:bg-warm-900 relative overflow-hidden">
+    <!-- Background glow -->
+    <div class="absolute inset-0 -z-10" aria-hidden="true">
+      <div class="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[300px] rounded-full opacity-8"
+        style="background: radial-gradient(ellipse, #E8704A 0%, transparent 70%);"></div>
+    </div>
+
     <div class="max-w-lg mx-auto px-4 sm:px-6 lg:px-8 text-center">
-      <p class="text-8xl font-extrabold text-milo-400 mb-6">404</p>
-      <h1 class="text-3xl font-bold text-slate-900 dark:text-white mb-4">
+      <!-- Big 404 in display font -->
+      <p class="font-display text-[120px] sm:text-[160px] leading-none text-milo-400/20 dark:text-milo-400/10 select-none mb-0" aria-hidden="true">
+        404
+      </p>
+
+      <!-- Milo commentary -->
+      <div class="relative -mt-8 mb-8">
+        <div class="inline-block bg-milo-400 text-white rounded-2xl rounded-bl-sm px-5 py-3 shadow-lg text-sm font-medium">
+          Hmm, I can't find that page. Let me help you get back on track.
+        </div>
+        <div class="flex items-center justify-center gap-2 mt-2">
+          <img src="/favicon.svg" alt="Milo" width="24" height="24" class="rounded-full" />
+          <span class="text-xs text-warm-400 dark:text-warm-500 font-medium">Milo</span>
+        </div>
+      </div>
+
+      <h1 class="font-display text-3xl sm:text-4xl text-warm-900 dark:text-cream-50 mb-4">
         Page not found
       </h1>
-      <p class="text-lg text-slate-600 dark:text-slate-400 mb-8">
-        The page you were looking for doesn't exist or has moved.
+      <p class="text-warm-500 dark:text-warm-400 mb-10 leading-relaxed">
+        The page you were looking for doesn't exist or has moved. Even the best students take a wrong turn sometimes.
       </p>
-      <a href="/" class="btn-primary">Back to home</a>
+
+      <a href="/" class="btn-primary">
+        Back to home
+      </a>
     </div>
   </section>
 

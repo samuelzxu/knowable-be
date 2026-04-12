@@ -6,7 +6,7 @@ const isMissingConfig = !siteKey || !apiUrl;
 
 {
   isMissingConfig ? (
-    <div class="rounded-xl border-2 border-amber-400 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-600 p-6 text-center">
+    <div class="rounded-2xl border-2 border-amber-300 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-600 p-6 text-center">
       <p class="text-amber-800 dark:text-amber-300 font-medium">
         ⚠️ Waitlist unavailable — configuration missing.
       </p>
@@ -24,7 +24,7 @@ const isMissingConfig = !siteKey || !apiUrl;
         <div>
           <label
             for="email"
-            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5"
+            class="block text-sm font-semibold text-warm-700 dark:text-warm-300 mb-2"
           >
             Email address
           </label>
@@ -35,7 +35,7 @@ const isMissingConfig = !siteKey || !apiUrl;
             required
             placeholder="you@example.com"
             autocomplete="email"
-            class="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-milo-400 focus:border-transparent transition"
+            class="w-full px-5 py-3.5 rounded-2xl border border-warm-200 dark:border-warm-600 bg-white dark:bg-warm-800 text-warm-900 dark:text-cream-50 placeholder-warm-400 dark:placeholder-warm-600 focus:outline-none focus:ring-2 focus:ring-milo-400 focus:border-transparent transition text-base shadow-sm"
           />
         </div>
 
@@ -51,21 +51,21 @@ const isMissingConfig = !siteKey || !apiUrl;
         <button
           type="submit"
           id="waitlist-submit"
-          class="btn-primary w-full py-3.5 text-base shadow-lg shadow-milo-400/25"
+          class="btn-primary w-full py-4 text-base shadow-lg shadow-milo-400/25"
         >
-          Join the waitlist
+          Get early access
         </button>
 
         <!-- Status messages -->
         <p
           id="waitlist-error"
-          class="hidden text-sm text-red-600 dark:text-red-400 text-center"
+          class="hidden text-sm text-red-600 dark:text-red-400 text-center bg-red-50 dark:bg-red-900/20 rounded-xl px-4 py-3 border border-red-200 dark:border-red-800"
           role="alert"
           aria-live="polite"
         />
         <p
           id="waitlist-info"
-          class="hidden text-sm text-slate-500 dark:text-slate-400 text-center"
+          class="hidden text-sm text-warm-500 dark:text-warm-400 text-center"
           aria-live="polite"
         />
       </form>
@@ -179,7 +179,7 @@ const isMissingConfig = !siteKey || !apiUrl;
             } finally {
               if (submitBtn) {
                 submitBtn.disabled = false;
-                submitBtn.textContent = "Join the waitlist";
+                submitBtn.textContent = "Get early access";
               }
             }
           });

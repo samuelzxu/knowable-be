@@ -5,35 +5,118 @@
 @layer base {
   html {
     scroll-behavior: smooth;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-      "Helvetica Neue", Arial, sans-serif;
+    font-family: "DM Sans", system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   body {
-    @apply bg-white text-slate-900;
+    @apply bg-cream-50 text-warm-900;
   }
 
   @media (prefers-color-scheme: dark) {
     body {
-      @apply bg-slate-950 text-slate-100;
+      @apply bg-warm-900 text-cream-100;
     }
+  }
+
+  h1, h2, h3 {
+    letter-spacing: -0.02em;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center px-6 py-3 rounded-xl font-semibold text-white bg-milo-400 hover:bg-milo-500 active:bg-milo-600 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-milo-400 focus:ring-offset-2;
+    @apply inline-flex items-center justify-center px-7 py-3.5 rounded-2xl font-semibold text-white bg-milo-400 hover:bg-milo-500 active:bg-milo-600 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-milo-400 focus:ring-offset-2 shadow-md hover:shadow-lg hover:shadow-milo-400/30 hover:-translate-y-0.5;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center px-6 py-3 rounded-xl font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2;
+    @apply inline-flex items-center justify-center px-7 py-3.5 rounded-2xl font-semibold text-warm-700 bg-warm-100 hover:bg-warm-200 active:bg-warm-300 border border-warm-200 hover:border-warm-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-warm-400 focus:ring-offset-2 hover:-translate-y-0.5;
   }
 
   @media (prefers-color-scheme: dark) {
     .btn-secondary {
-      @apply text-slate-200 bg-slate-800 hover:bg-slate-700 active:bg-slate-600;
+      @apply text-cream-200 bg-warm-800 hover:bg-warm-700 border-warm-700 hover:border-warm-600;
     }
   }
+
+  .section-label {
+    @apply inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-milo-500 mb-4;
+  }
+
+  .card-warm {
+    @apply bg-white rounded-3xl border border-warm-200 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .card-warm {
+      @apply bg-warm-800 border-warm-700;
+    }
+  }
+
+  /* Scroll-triggered fade-up animation */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+  .reveal-delay-4 { transition-delay: 0.4s; }
+  .reveal-delay-5 { transition-delay: 0.5s; }
+}
+
+/* Hero animated gradient background */
+@keyframes hero-gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Notebook illustration glow */
+@keyframes notebook-glow {
+  0%, 100% {
+    box-shadow: 0 0 40px 12px rgba(232, 112, 74, 0.12), 0 20px 60px rgba(0,0,0,0.08);
+  }
+  50% {
+    box-shadow: 0 0 80px 24px rgba(232, 112, 74, 0.22), 0 20px 60px rgba(0,0,0,0.08);
+  }
+}
+
+@keyframes float-up-down {
+  0%, 100% { transform: translateY(0px) rotate(-1deg); }
+  50% { transform: translateY(-8px) rotate(-1deg); }
+}
+
+@keyframes dot-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.4); opacity: 0.7; }
+}
+
+@keyframes hint-bubble-in {
+  0% { opacity: 0; transform: translateY(8px) scale(0.95); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes step-line-grow {
+  0% { height: 0; }
+  100% { height: 100%; }
+}
+
+/* Accordion */
+details summary {
+  list-style: none;
+}
+details summary::-webkit-details-marker {
+  display: none;
 }

@@ -2,30 +2,62 @@
 const year = new Date().getFullYear();
 ---
 
-<footer class="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-10">
-  <div
-    class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-slate-500 dark:text-slate-400"
-  >
-    <p>
-      &copy; {year}
-      <a
-        href="/"
-        class="font-medium text-slate-700 dark:text-slate-300 hover:text-milo-400 dark:hover:text-milo-400 transition-colors"
-        >knowable.ca</a
-      >. All rights reserved.
-    </p>
+<footer class="border-t border-warm-200/60 dark:border-warm-700/40 bg-cream-100 dark:bg-warm-900 py-12">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 
-    <nav class="flex items-center gap-6">
-      <a
-        href="/privacy"
-        class="hover:text-slate-900 dark:hover:text-white transition-colors"
-        >Privacy Policy</a
-      >
-      <a
-        href="/terms"
-        class="hover:text-slate-900 dark:hover:text-white transition-colors"
-        >Terms of Service</a
-      >
-    </nav>
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-8 mb-10">
+      <!-- Brand -->
+      <div>
+        <a href="/" class="flex items-center gap-2.5 mb-3">
+          <div class="w-8 h-8 rounded-xl bg-milo-400 flex items-center justify-center shadow-sm">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9 2L11.5 7H16L12 10.5L13.5 16L9 13L4.5 16L6 10.5L2 7H6.5L9 2Z" fill="white" opacity="0.9"/>
+            </svg>
+          </div>
+          <span class="font-display italic text-lg font-semibold text-warm-900 dark:text-cream-50">Knowable</span>
+        </a>
+        <p class="text-sm text-warm-500 dark:text-warm-400 max-w-xs leading-relaxed">
+          An AI coach that sees your notebook and helps you think — not just recall. Meet Milo.
+        </p>
+        <p class="text-sm text-warm-400 dark:text-warm-500 mt-2">
+          Built with care in Canada 🍁
+        </p>
+      </div>
+
+      <!-- Links -->
+      <nav class="flex flex-col sm:flex-row gap-8">
+        <div>
+          <div class="text-xs font-semibold uppercase tracking-widest text-warm-400 dark:text-warm-600 mb-3">Product</div>
+          <ul class="space-y-2">
+            <li><a href="/#how-it-works" class="text-sm text-warm-600 dark:text-warm-400 hover:text-warm-900 dark:hover:text-cream-100 transition-colors">How it works</a></li>
+            <li><a href="/#features" class="text-sm text-warm-600 dark:text-warm-400 hover:text-warm-900 dark:hover:text-cream-100 transition-colors">Features</a></li>
+            <li><a href="/#faq" class="text-sm text-warm-600 dark:text-warm-400 hover:text-warm-900 dark:hover:text-cream-100 transition-colors">FAQ</a></li>
+            <li><a href="/#waitlist" class="text-sm text-milo-500 dark:text-milo-400 hover:text-milo-600 font-medium transition-colors">Get early access →</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="text-xs font-semibold uppercase tracking-widest text-warm-400 dark:text-warm-600 mb-3">Legal</div>
+          <ul class="space-y-2">
+            <li><a href="/privacy" class="text-sm text-warm-600 dark:text-warm-400 hover:text-warm-900 dark:hover:text-cream-100 transition-colors">Privacy Policy</a></li>
+            <li><a href="/terms" class="text-sm text-warm-600 dark:text-warm-400 hover:text-warm-900 dark:hover:text-cream-100 transition-colors">Terms of Service</a></li>
+          </ul>
+        </div>
+      </nav>
+    </div>
+
+    <!-- Bottom bar -->
+    <div class="pt-8 border-t border-warm-200/60 dark:border-warm-700/40 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-warm-400 dark:text-warm-600">
+      <p>
+        &copy; {year}{" "}
+        <a href="/" class="text-warm-500 dark:text-warm-500 hover:text-milo-400 transition-colors font-medium">knowable.ca</a>
+        . All rights reserved.
+      </p>
+      <p class="flex items-center gap-1">
+        <span>Made with</span>
+        <svg class="w-3.5 h-3.5 text-milo-400 inline" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/></svg>
+        <span>for students who work hard</span>
+      </p>
+    </div>
+
   </div>
 </footer>
