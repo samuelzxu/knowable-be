@@ -64,6 +64,22 @@ resource "aws_apigatewayv2_integration" "config" {
   payload_format_version = "2.0"
 }
 
+resource "aws_apigatewayv2_integration" "context" {
+  api_id                 = aws_apigatewayv2_api.http.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.context.invoke_arn
+  integration_method     = "POST"
+  payload_format_version = "2.0"
+}
+
+resource "aws_apigatewayv2_integration" "tts" {
+  api_id                 = aws_apigatewayv2_api.http.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.tts.invoke_arn
+  integration_method     = "POST"
+  payload_format_version = "2.0"
+}
+
 resource "aws_apigatewayv2_integration" "waitlist" {
   api_id                 = aws_apigatewayv2_api.http.id
   integration_type       = "AWS_PROXY"
@@ -138,6 +154,24 @@ resource "aws_apigatewayv2_route" "get_config" {
   authorizer_id      = aws_apigatewayv2_authorizer.cognito_jwt.id
 }
 
+# POST /context — context loop update
+resource "aws_apigatewayv2_route" "post_context" {
+  api_id             = aws_apigatewayv2_api.http.id
+  route_key          = "POST /context"
+  target             = "integrations/${aws_apigatewayv2_integration.context.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_jwt.id
+}
+
+# POST /tts — text-to-speech via ElevenLabs
+resource "aws_apigatewayv2_route" "post_tts" {
+  api_id             = aws_apigatewayv2_api.http.id
+  route_key          = "POST /tts"
+  target             = "integrations/${aws_apigatewayv2_integration.tts.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_jwt.id
+}
+
 # Public (no authorizer). Throttled at the route level via the stage's
 # route_settings block below.
 resource "aws_apigatewayv2_route" "post_waitlist" {
@@ -185,6 +219,22 @@ resource "aws_lambda_permission" "apigw_config" {
   statement_id  = "AllowAPIGatewayInvokeConfig"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.config.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.http.execution_arn}/*/*"
+}
+
+resource "aws_lambda_permission" "apigw_context" {
+  statement_id  = "AllowAPIGatewayInvokeContext"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.context.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.http.execution_arn}/*/*"
+}
+
+resource "aws_lambda_permission" "apigw_tts" {
+  statement_id  = "AllowAPIGatewayInvokeTTS"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.tts.function_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.http.execution_arn}/*/*"
 }

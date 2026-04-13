@@ -29,6 +29,8 @@ export interface SessionRecord {
   hintsCount?: number;
   problemsCount?: number;
   avgTimeToSolveMs?: number;
+  context?: string;
+  contextUpdatedAt?: string;
 }
 
 export interface ProblemRecord {
@@ -89,6 +91,30 @@ export async function getSession(userId: string, sessionId: string): Promise<Ses
     new GetCommand({ TableName: TABLE_SESSIONS, Key: { userId, sessionId } })
   );
   return result.Item as SessionRecord | undefined;
+}
+
+export async function updateSessionContext(
+  userId: string,
+  sessionId: string,
+  context: string
+): Promise<void> {
+  const client = getDocumentClient();
+  const { UpdateCommand } = await import("@aws-sdk/lib-dynamodb");
+  await client.send(
+    new UpdateCommand({
+      TableName: TABLE_SESSIONS,
+      Key: { userId, sessionId },
+      UpdateExpression: "SET #ctx = :ctx, #ctxAt = :ctxAt",
+      ExpressionAttributeNames: {
+        "#ctx": "context",
+        "#ctxAt": "contextUpdatedAt",
+      },
+      ExpressionAttributeValues: {
+        ":ctx": context,
+        ":ctxAt": new Date().toISOString(),
+      },
+    })
+  );
 }
 
 export async function listSessions(userId: string): Promise<SessionRecord[]> {

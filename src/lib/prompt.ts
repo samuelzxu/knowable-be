@@ -18,24 +18,30 @@ export interface PassiveHintInput {
   problem_text: string;
   transcript: string;
   hint_history: string[];
+  context?: string;
 }
 
 export interface ActiveQueryInput {
   problem_text: string;
   user_query: string;
   hint_history: string[];
+  context?: string;
 }
 
 export function buildPassiveHintPrompt(input: PassiveHintInput): AnthropicMessage[] {
-  const { problem_text, transcript, hint_history } = input;
+  const { problem_text, transcript, hint_history, context } = input;
 
   const hintHistoryText =
     hint_history.length > 0
       ? `\nPrevious hints given:\n${hint_history.map((h, i) => `${i + 1}. ${h}`).join("\n")}`
       : "";
 
-  const userMessage = `${SYSTEM_PROMPT}
+  const contextBlock = context
+    ? `\nHere is the full context of what the student has been working on:\n${context}\n`
+    : "";
 
+  const userMessage = `${SYSTEM_PROMPT}
+${contextBlock}
 Problem:
 ${problem_text}
 
@@ -54,15 +60,19 @@ The student appears stuck. Provide a gentle Socratic hint to get them moving aga
 }
 
 export function buildActiveQueryPrompt(input: ActiveQueryInput): AnthropicMessage[] {
-  const { problem_text, user_query, hint_history } = input;
+  const { problem_text, user_query, hint_history, context } = input;
 
   const hintHistoryText =
     hint_history.length > 0
       ? `\nPrevious hints given:\n${hint_history.map((h, i) => `${i + 1}. ${h}`).join("\n")}`
       : "";
 
-  const userMessage = `${SYSTEM_PROMPT}
+  const contextBlock = context
+    ? `\nHere is the full context of what the student has been working on:\n${context}\n`
+    : "";
 
+  const userMessage = `${SYSTEM_PROMPT}
+${contextBlock}
 Problem:
 ${problem_text}
 

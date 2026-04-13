@@ -32,10 +32,14 @@ export async function checkRegionOnColdStart(): Promise<void> {
   } catch (err: unknown) {
     const error = err as { $metadata?: { httpStatusCode?: number }; name?: string };
     const status = error.$metadata?.httpStatusCode;
-    if (status === 403 || status === 404) {
-      console.error(`[region-check] Bedrock unavailable in ${region}: HTTP ${status}`);
+    if (status === 404) {
+      // 404 = model genuinely not found in this region
+      console.error(`[region-check] Bedrock model not found in ${region}: HTTP ${status}`);
       regionCheckPassed = false;
     } else {
+      // 400 = ValidationException (expected — body was invalid, but model exists)
+      // 403 = could be IAM permission issue with inference profiles, not a region issue
+      //       The fallback chain in invokeBedrock will handle model-level failures.
       // 400 ValidationException, 400 ModelNotReadyException, etc. — region is reachable
       console.info(
         `[region-check] Bedrock reachable in ${region} (probe returned ${status ?? error.name})`

@@ -4,9 +4,20 @@ resource "aws_secretsmanager_secret" "turnstile" {
   recovery_window_in_days = 0
 }
 
+resource "aws_secretsmanager_secret" "elevenlabs" {
+  name                    = "knowable/elevenlabs/secret"
+  description             = "ElevenLabs API key for TTS. Populate manually after creating an ElevenLabs account."
+  recovery_window_in_days = 0
+}
+
 # Intentionally no aws_secretsmanager_secret_version: the user populates the
-# secret manually with:
+# secrets manually with:
 #   aws secretsmanager put-secret-value \
 #     --profile knowable \
 #     --secret-id knowable/turnstile/secret \
+#     --secret-string <secret>
+#
+#   aws secretsmanager put-secret-value \
+#     --profile knowable \
+#     --secret-id knowable/elevenlabs/secret \
 #     --secret-string <secret>

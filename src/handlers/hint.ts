@@ -17,6 +17,7 @@ type HintSource = "passive_stuck" | "active_voice" | "active_text";
 interface HintRequestBody {
   source: HintSource;
   problem_text: string;
+  context?: string;
   transcript?: string;
   hint_history?: string[];
   user_query?: string;
@@ -63,7 +64,7 @@ export const handler = async (
     return json(400, { error: "invalid_json" });
   }
 
-  const { source, problem_text, transcript, hint_history, user_query } = body;
+  const { source, problem_text, context, transcript, hint_history, user_query } = body;
 
   if (!source || !problem_text) {
     return json(400, { error: "missing_required_fields", fields: ["source", "problem_text"] });
@@ -98,12 +99,14 @@ export const handler = async (
       problem_text,
       transcript: transcript ?? "",
       hint_history: hintHistoryArr,
+      context,
     });
   } else {
     messages = buildActiveQueryPrompt({
       problem_text,
       user_query: user_query ?? "",
       hint_history: hintHistoryArr,
+      context,
     });
   }
 

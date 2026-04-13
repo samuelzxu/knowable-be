@@ -68,7 +68,10 @@ data "aws_iam_policy_document" "secretsmanager_read" {
   statement {
     effect    = "Allow"
     actions   = ["secretsmanager:GetSecretValue"]
-    resources = [aws_secretsmanager_secret.turnstile.arn]
+    resources = [
+      aws_secretsmanager_secret.turnstile.arn,
+      aws_secretsmanager_secret.elevenlabs.arn,
+    ]
   }
 }
 
@@ -85,10 +88,16 @@ data "aws_iam_policy_document" "bedrock_invoke" {
     effect = "Allow"
     actions = [
       "bedrock:InvokeModel",
-      "bedrock:ListFoundationModels",
+      "bedrock:InvokeModelWithResponseStream",
+      "bedrock:GetInferenceProfile",
     ]
     resources = [
-      local.bedrock_model_arn,
+      # Foundation models (direct IDs like anthropic.claude-*)
+      "arn:aws:bedrock:${var.region}::foundation-model/anthropic.claude-*",
+      # Inference profiles (regional IDs like us.anthropic.claude-*)
+      "arn:aws:bedrock:${var.region}:${data.aws_caller_identity.current.account_id}:inference-profile/us.anthropic.*",
+      # Cross-region inference may route to other regions' foundation models
+      "arn:aws:bedrock:*::foundation-model/anthropic.claude-*",
     ]
   }
 

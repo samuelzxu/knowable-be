@@ -41,7 +41,7 @@ export async function checkAndIncrementUserDailyQuota(
         TableName: TABLE_QUOTA,
         Key: {
           userId: { S: userId },
-          sk: { S: sk },
+          yyyymmdd: { S: sk },
         },
         UpdateExpression:
           "SET #count = if_not_exists(#count, :zero) + :one",
@@ -77,7 +77,7 @@ export async function checkAndIncrementGlobalDailyQuota(): Promise<QuotaResult> 
         TableName: TABLE_QUOTA,
         Key: {
           userId: { S: globalPk },
-          sk: { S: sk },
+          yyyymmdd: { S: sk },
         },
         UpdateExpression:
           "SET #count = if_not_exists(#count, :zero) + :one",

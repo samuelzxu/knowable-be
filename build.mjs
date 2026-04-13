@@ -20,7 +20,7 @@ await build({
     "@aws-sdk/client-cognito-identity-provider",
     "@aws-sdk/client-secrets-manager",
     "@aws-sdk/lib-dynamodb",
-    "aws-jwt-verify",
+    // NOTE: aws-jwt-verify is NOT pre-installed on Lambda — must be bundled
   ],
   sourcemap: true,
   minify: false,

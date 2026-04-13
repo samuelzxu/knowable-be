@@ -63,7 +63,7 @@ describe("checkRegionOnColdStart", () => {
     expect(() => assertRegionAvailable()).not.toThrow();
   });
 
-  it("sets regionCheckPassed=false when probe returns 403", async () => {
+  it("sets regionCheckPassed=true when probe returns 403 (IAM issue, not region issue)", async () => {
     const mockSend = vi.fn().mockRejectedValue(
       Object.assign(new Error("AccessDenied"), {
         name: "AccessDeniedException",
@@ -75,7 +75,7 @@ describe("checkRegionOnColdStart", () => {
     );
 
     await checkRegionOnColdStart();
-    expect(() => assertRegionAvailable()).toThrow(RegionUnavailableError);
+    expect(() => assertRegionAvailable()).not.toThrow();
   });
 
   it("sets regionCheckPassed=false when probe returns 404", async () => {

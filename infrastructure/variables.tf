@@ -19,13 +19,13 @@ variable "env" {
 variable "bedrock_model_id" {
   description = "Bedrock foundation model ID used by the hint Lambda."
   type        = string
-  default     = "anthropic.claude-3-5-sonnet-20240620-v1:0"
+  default     = "us.anthropic.claude-opus-4-6-v1"
 }
 
 variable "daily_hint_quota_per_user" {
   description = "Per-user daily hint ceiling enforced by the hint Lambda."
   type        = number
-  default     = 30
+  default     = 1000
 }
 
 variable "daily_hint_quota_global" {
@@ -102,6 +102,12 @@ variable "google_client_secret" {
 }
 
 # ---- Cloudflare Turnstile ----
+
+variable "elevenlabs_default_voice_id" {
+  description = "Default ElevenLabs voice ID for Milo TTS."
+  type        = string
+  default     = "JBFqnCBsd6RMkjVDRZzb" # "George" - warm, friendly male
+}
 
 variable "turnstile_site_key" {
   description = "Cloudflare Turnstile site key (public). Injected into the Astro landing build."
