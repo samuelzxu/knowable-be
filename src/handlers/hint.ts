@@ -4,6 +4,8 @@ import { checkAndIncrementGlobalDailyQuota, checkAndIncrementUserDailyQuota } fr
 import { buildPassiveHintPrompt, buildActiveQueryPrompt } from "../lib/prompt.js";
 import { invokeBedrock } from "../lib/bedrock.js";
 import { verifyJwt, extractBearerToken } from "../lib/auth.js";
+import { putMessage, type MessageRecord } from "../lib/dynamo.js";
+import { randomUUID } from "crypto";
 
 const REGION = process.env["AWS_REGION"] ?? "us-east-1";
 const MODEL_ID =
@@ -122,6 +124,34 @@ export const handler = async (
     console.error("[hint] Bedrock error:", err);
     return json(502, { error: "bedrock_error" });
   }
+
+  // Store chat messages (fire-and-forget so failures don't break hint delivery)
+  const now = new Date().toISOString();
+  const sessionId = body.sessionId ?? "unknown";
+
+  const triggerMsg: MessageRecord = {
+    sessionId,
+    sk: `${now}#${randomUUID()}`,
+    messageId: randomUUID(),
+    role: source === "passive_stuck" ? "system" : "user",
+    text: source === "passive_stuck"
+      ? "[Student appears stuck]"
+      : (user_query ?? "[no query]"),
+    timestamp: now,
+    source,
+  };
+  await putMessage(triggerMsg).catch(err => console.warn("[hint] Failed to store trigger message:", err));
+
+  const miloMsg: MessageRecord = {
+    sessionId,
+    sk: `${now}#${randomUUID()}`,
+    messageId: randomUUID(),
+    role: "milo",
+    text: result.text,
+    timestamp: now,
+    source,
+  };
+  await putMessage(miloMsg).catch(err => console.warn("[hint] Failed to store hint message:", err));
 
   return json(200, {
     hint: result.text,

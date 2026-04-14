@@ -80,10 +80,26 @@ resource "aws_apigatewayv2_integration" "tts" {
   payload_format_version = "2.0"
 }
 
+resource "aws_apigatewayv2_integration" "messages" {
+  api_id                 = aws_apigatewayv2_api.http.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.messages.invoke_arn
+  integration_method     = "POST"
+  payload_format_version = "2.0"
+}
+
 resource "aws_apigatewayv2_integration" "waitlist" {
   api_id                 = aws_apigatewayv2_api.http.id
   integration_type       = "AWS_PROXY"
   integration_uri        = aws_lambda_function.waitlist.invoke_arn
+  integration_method     = "POST"
+  payload_format_version = "2.0"
+}
+
+resource "aws_apigatewayv2_integration" "reason" {
+  api_id                 = aws_apigatewayv2_api.http.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.reason.invoke_arn
   integration_method     = "POST"
   payload_format_version = "2.0"
 }
@@ -172,6 +188,24 @@ resource "aws_apigatewayv2_route" "post_tts" {
   authorizer_id      = aws_apigatewayv2_authorizer.cognito_jwt.id
 }
 
+# GET /messages — list chat messages for a session
+resource "aws_apigatewayv2_route" "get_messages" {
+  api_id             = aws_apigatewayv2_api.http.id
+  route_key          = "GET /messages"
+  target             = "integrations/${aws_apigatewayv2_integration.messages.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_jwt.id
+}
+
+# POST /reason — reasoning loop
+resource "aws_apigatewayv2_route" "post_reason" {
+  api_id             = aws_apigatewayv2_api.http.id
+  route_key          = "POST /reason"
+  target             = "integrations/${aws_apigatewayv2_integration.reason.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_jwt.id
+}
+
 # Public (no authorizer). Throttled at the route level via the stage's
 # route_settings block below.
 resource "aws_apigatewayv2_route" "post_waitlist" {
@@ -239,10 +273,26 @@ resource "aws_lambda_permission" "apigw_tts" {
   source_arn    = "${aws_apigatewayv2_api.http.execution_arn}/*/*"
 }
 
+resource "aws_lambda_permission" "apigw_messages" {
+  statement_id  = "AllowAPIGatewayInvokeMessages"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.messages.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.http.execution_arn}/*/*"
+}
+
 resource "aws_lambda_permission" "apigw_waitlist" {
   statement_id  = "AllowAPIGatewayInvokeWaitlist"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.waitlist.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.http.execution_arn}/*/*"
+}
+
+resource "aws_lambda_permission" "apigw_reason" {
+  statement_id  = "AllowAPIGatewayInvokeReason"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.reason.function_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.http.execution_arn}/*/*"
 }

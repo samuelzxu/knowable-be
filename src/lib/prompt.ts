@@ -37,7 +37,7 @@ export function buildPassiveHintPrompt(input: PassiveHintInput): AnthropicMessag
       : "";
 
   const contextBlock = context
-    ? `\nHere is the full context of what the student has been working on:\n${context}\n`
+    ? `\nSession event log and context (timestamped):\n${context}\n`
     : "";
 
   const userMessage = `${SYSTEM_PROMPT}
@@ -68,7 +68,7 @@ export function buildActiveQueryPrompt(input: ActiveQueryInput): AnthropicMessag
       : "";
 
   const contextBlock = context
-    ? `\nHere is the full context of what the student has been working on:\n${context}\n`
+    ? `\nSession event log and context (timestamped):\n${context}\n`
     : "";
 
   const userMessage = `${SYSTEM_PROMPT}

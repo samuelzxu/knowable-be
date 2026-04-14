@@ -151,6 +151,27 @@ resource "aws_dynamodb_table" "config" {
   }
 }
 
+resource "aws_dynamodb_table" "messages" {
+  name         = "knowable-messages"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "sessionId"
+  range_key    = "sk"
+
+  attribute {
+    name = "sessionId"
+    type = "S"
+  }
+
+  attribute {
+    name = "sk"
+    type = "S"
+  }
+
+  point_in_time_recovery {
+    enabled = true
+  }
+}
+
 resource "aws_dynamodb_table" "waitlist" {
   name         = "knowable-waitlist"
   billing_mode = "PAY_PER_REQUEST"

@@ -129,6 +129,21 @@ resource "aws_lambda_function" "tts" {
   }
 }
 
+resource "aws_lambda_function" "messages" {
+  function_name    = "knowable-messages"
+  filename         = "${path.module}/build/messages.zip"
+  source_code_hash = filebase64sha256("${path.module}/build/messages.zip")
+  role             = aws_iam_role.lambda_exec.arn
+  runtime          = "nodejs20.x"
+  handler          = "index.handler"
+  memory_size      = 512
+  timeout          = 15
+
+  environment {
+    variables = local.lambda_common_env
+  }
+}
+
 resource "aws_lambda_function" "waitlist" {
   function_name    = "knowable-waitlist"
   filename         = "${path.module}/build/waitlist.zip"
@@ -141,5 +156,24 @@ resource "aws_lambda_function" "waitlist" {
 
   environment {
     variables = local.lambda_common_env
+  }
+}
+
+resource "aws_lambda_function" "reason" {
+  function_name    = "knowable-reason"
+  filename         = "${path.module}/build/reason.zip"
+  source_code_hash = filebase64sha256("${path.module}/build/reason.zip")
+  role             = aws_iam_role.lambda_exec.arn
+  runtime          = "nodejs20.x"
+  handler          = "index.handler"
+  memory_size      = 1024
+  timeout          = 30
+
+  environment {
+    variables = merge(local.lambda_common_env, {
+      REASON_MODEL_ID         = "us.anthropic.claude-sonnet-4-6"
+      DYNAMODB_TABLE_SESSIONS = aws_dynamodb_table.sessions.name
+      DYNAMODB_TABLE_MESSAGES = aws_dynamodb_table.messages.name
+    })
   }
 }

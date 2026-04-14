@@ -8,6 +8,7 @@ const TABLE_GRADES = process.env["DYNAMODB_TABLE_GRADES"] ?? "knowable-grades";
 const TABLE_WAITLIST = process.env["DYNAMODB_TABLE_WAITLIST"] ?? "knowable-waitlist";
 const TABLE_TELEMETRY = process.env["DYNAMODB_TABLE_TELEMETRY"] ?? "knowable-telemetry";
 const TABLE_CONFIG = process.env["DYNAMODB_TABLE_CONFIG"] ?? "knowable-config";
+const TABLE_MESSAGES = process.env["DYNAMODB_TABLE_MESSAGES"] ?? "knowable-messages";
 
 let _client: DynamoDBDocumentClient | null = null;
 
@@ -31,6 +32,8 @@ export interface SessionRecord {
   avgTimeToSolveMs?: number;
   context?: string;
   contextUpdatedAt?: string;
+  currentAnalysis?: string;
+  analysisUpdatedAt?: string;
 }
 
 export interface ProblemRecord {
@@ -75,6 +78,16 @@ export interface TelemetryRecord {
   ttl?: number;
 }
 
+export interface MessageRecord {
+  sessionId: string;
+  sk: string;
+  messageId: string;
+  role: "milo" | "user" | "system";
+  text: string;
+  timestamp: string;
+  source: "passive_stuck" | "active_voice" | "active_text" | "context" | "system" | "active" | "passive";
+}
+
 export interface ConfigRecord {
   configKey: string;
   value: unknown;
@@ -112,6 +125,30 @@ export async function updateSessionContext(
       ExpressionAttributeValues: {
         ":ctx": context,
         ":ctxAt": new Date().toISOString(),
+      },
+    })
+  );
+}
+
+export async function updateSessionAnalysis(
+  userId: string,
+  sessionId: string,
+  analysis: string
+): Promise<void> {
+  const client = getDocumentClient();
+  const { UpdateCommand } = await import("@aws-sdk/lib-dynamodb");
+  await client.send(
+    new UpdateCommand({
+      TableName: TABLE_SESSIONS,
+      Key: { userId, sessionId },
+      UpdateExpression: "SET #an = :an, #anAt = :anAt",
+      ExpressionAttributeNames: {
+        "#an": "currentAnalysis",
+        "#anAt": "analysisUpdatedAt",
+      },
+      ExpressionAttributeValues: {
+        ":an": analysis,
+        ":anAt": new Date().toISOString(),
       },
     })
   );
@@ -172,6 +209,24 @@ export async function putWaitlist(record: WaitlistRecord): Promise<void> {
 export async function putTelemetryEvent(record: TelemetryRecord): Promise<void> {
   const client = getDocumentClient();
   await client.send(new PutCommand({ TableName: TABLE_TELEMETRY, Item: record }));
+}
+
+export async function putMessage(record: MessageRecord): Promise<void> {
+  const client = getDocumentClient();
+  await client.send(new PutCommand({ TableName: TABLE_MESSAGES, Item: record }));
+}
+
+export async function listMessages(sessionId: string): Promise<MessageRecord[]> {
+  const client = getDocumentClient();
+  const result = await client.send(
+    new QueryCommand({
+      TableName: TABLE_MESSAGES,
+      KeyConditionExpression: "sessionId = :sid",
+      ExpressionAttributeValues: { ":sid": sessionId },
+      ScanIndexForward: true,
+    })
+  );
+  return (result.Items ?? []) as MessageRecord[];
 }
 
 export async function getConfig(configKey: string): Promise<ConfigRecord | undefined> {

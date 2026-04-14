@@ -30,7 +30,18 @@ Given the current image of their paper and your previous observations, produce a
 
 Be concise but thorough. Use mathematical notation where appropriate. This context will be used to generate targeted hints when the student needs help.
 
-If this is the first observation (no previous context), describe everything you see from scratch.`;
+If this is the first observation (no previous context), describe everything you see from scratch.
+
+## Session States
+You can suggest state transitions by including \\boxed{state_name} in your response. Valid states:
+- active: student is actively working
+- camera_lost: the paper/notebook is not visible or camera is obstructed
+- positioning_camera: the camera needs repositioning (partially visible)
+
+Only suggest a state change when clearly warranted. If the student is working normally, do not include a \\boxed{} tag.
+
+## Event Log
+The context includes a timestamped event log showing what has happened in the session so far. Use these timestamps to reason about timing — for example, if the student has been idle for 30 seconds, that's different from 3 seconds.`;
 
 function json(statusCode: number, body: unknown): APIGatewayProxyResultV2 {
   return {
@@ -92,7 +103,7 @@ export const handler = async (
         {
           type: "text",
           text: body.current_context
-            ? `Previous context:\n${body.current_context}\n\nUpdate this context based on what you now see in the image.`
+            ? `Event log:\n${body.current_context}\n\nUpdate your analysis based on the current image and events.`
             : "This is the first observation. Describe everything you see on the paper.",
         },
       ],

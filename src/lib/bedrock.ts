@@ -26,15 +26,16 @@ export interface AnthropicMessage {
 }
 
 // Fallback chain: try each model ID in order until one works.
-// Opus 4.6 requires inference profile (us. prefix); if unavailable,
-// fall back to Sonnet 4.6, then Sonnet 4.5, then Sonnet 3.7.
+// Sonnet 4.6 is primary (fast + cheap + plenty smart). Opus 4.6 is the
+// escalation. Sonnet 4.5 entries removed — the account has no marketplace
+// subscription and they always 403.
 const FALLBACK_MODELS = [
-  "us.anthropic.claude-opus-4-6-v1",
   "us.anthropic.claude-sonnet-4-6",
   "anthropic.claude-sonnet-4-6",
-  "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
-  "anthropic.claude-sonnet-4-5-20250929-v1:0",
+  "us.anthropic.claude-opus-4-6-v1",
+  "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
   "anthropic.claude-3-7-sonnet-20250219-v1:0",
+  "us.anthropic.claude-3-5-haiku-20241022-v1:0",
 ];
 
 export async function invokeBedrock(
@@ -72,6 +73,8 @@ export async function invokeBedrock(
 
       if (currentModelId !== modelId) {
         console.log(`[bedrock] Primary model ${modelId} failed; succeeded with fallback ${currentModelId}`);
+      } else {
+        console.log(`[bedrock] model=${currentModelId}`);
       }
 
       const bodyText = new TextDecoder().decode(response.body);
@@ -101,7 +104,7 @@ export async function invokeBedrock(
         msg.includes("model identifier is invalid") ||
         msg.includes("on-demand throughput isn't supported")
       ) {
-        console.log(`[bedrock] Model ${currentModelId} failed (${name}), trying next fallback...`);
+        console.log(`[bedrock] Model ${currentModelId} failed (${name}): ${msg.slice(0, 200)}, trying next fallback...`);
         lastError = err;
         continue;
       }

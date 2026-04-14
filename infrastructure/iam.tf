@@ -10,6 +10,7 @@ locals {
     aws_dynamodb_table.telemetry.arn,
     aws_dynamodb_table.config.arn,
     aws_dynamodb_table.waitlist.arn,
+    aws_dynamodb_table.messages.arn,
   ]
 
   bedrock_model_arn = "arn:aws:bedrock:${var.region}::foundation-model/${var.bedrock_model_id}"
