@@ -72,3 +72,8 @@ output "turnstile_site_key" {
   description = "Cloudflare Turnstile site key (non-sensitive) — read by the landing build script."
   value       = var.turnstile_site_key
 }
+
+output "reason_stream_url" {
+  value       = aws_lambda_function_url.reason_stream.function_url
+  description = "Lambda Function URL for streaming /reason-stream endpoint."
+}

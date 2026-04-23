@@ -171,9 +171,76 @@ resource "aws_lambda_function" "reason" {
 
   environment {
     variables = merge(local.lambda_common_env, {
-      REASON_MODEL_ID         = "us.anthropic.claude-sonnet-4-6"
+      # Passive (vision) passes → Haiku 4.5 for throughput. Active queries
+      # (force_reply) → Sonnet 4.6 for answer quality.
+      REASON_MODEL_ID_PASSIVE = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
+      REASON_MODEL_ID_ACTIVE  = "us.anthropic.claude-sonnet-4-6"
       DYNAMODB_TABLE_SESSIONS = aws_dynamodb_table.sessions.name
       DYNAMODB_TABLE_MESSAGES = aws_dynamodb_table.messages.name
     })
   }
+}
+
+# Streaming sibling of the /reason Lambda. Uses Lambda Function URL with
+# RESPONSE_STREAM invoke mode so we can stream Bedrock tokens as SSE and
+# pipeline ElevenLabs TTS in parallel. The existing /reason Lambda above
+# stays as the fallback.
+resource "aws_lambda_function" "reason_stream" {
+  function_name    = "knowable-reason-stream"
+  filename         = "${path.module}/build/reason-stream.zip"
+  source_code_hash = filebase64sha256("${path.module}/build/reason-stream.zip")
+  role             = aws_iam_role.lambda_exec.arn
+  runtime          = "nodejs20.x"
+  handler          = "index.handler"
+  memory_size      = 1024
+  timeout          = 60
+
+  environment {
+    variables = merge(local.lambda_common_env, {
+      REASON_MODEL_ID_PASSIVE     = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
+      REASON_MODEL_ID_ACTIVE      = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
+      ELEVENLABS_SECRET_NAME      = aws_secretsmanager_secret.elevenlabs.name
+      ELEVENLABS_DEFAULT_VOICE_ID = var.elevenlabs_default_voice_id
+      DYNAMODB_TABLE_SESSIONS     = aws_dynamodb_table.sessions.name
+      DYNAMODB_TABLE_MESSAGES     = aws_dynamodb_table.messages.name
+    })
+  }
+}
+
+resource "aws_lambda_function_url" "reason_stream" {
+  function_name      = aws_lambda_function.reason_stream.function_name
+  authorization_type = "NONE"
+  invoke_mode        = "RESPONSE_STREAM"
+
+  cors {
+    allow_credentials = false
+    allow_origins     = ["*"]
+    allow_methods     = ["POST"]
+    allow_headers     = ["authorization", "content-type"]
+    max_age           = 300
+  }
+}
+
+# Explicit public-invoke permission for the Function URL. AWS normally
+# auto-creates this via the console flow; the Terraform aws_lambda_function_url
+# resource does NOT attach it on its own, so without this the URL always
+# returns 403 AccessDeniedException. The JWT check inside the handler is
+# still our real auth - this just lets the request reach the handler.
+resource "aws_lambda_permission" "reason_stream_url_invoke" {
+  statement_id           = "FunctionURLAllowPublicAccess"
+  action                 = "lambda:InvokeFunctionUrl"
+  function_name          = aws_lambda_function.reason_stream.function_name
+  principal              = "*"
+  function_url_auth_type = "NONE"
+}
+
+# Lambda Function URLs with AuthType=NONE additionally require
+# lambda:InvokeFunction (not just InvokeFunctionUrl) for the request to reach
+# the handler. Without this, the URL endpoint returns 403 AccessDeniedException
+# at the AWS auth layer BEFORE touching the Lambda code.
+resource "aws_lambda_permission" "reason_stream_invoke" {
+  statement_id  = "FunctionURLAllowInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.reason_stream.function_name
+  principal     = "*"
 }
