@@ -49,9 +49,16 @@ import {
   createStreamParser,
   parseEventsSection,
   parseStateSection,
-  type ReasonRequestBody,
-  type ReasonState,
 } from "../lib/reason-common.js";
+import {
+  ReasonRequestSchema,
+  SSEEventSchemas,
+  validateReasonResult,
+  normalizeHintField,
+  type ReasonState,
+  type SSEEventName,
+  type SSEEventPayload,
+} from "../lib/reason-schemas.js";
 import { randomUUID } from "node:crypto";
 
 // Minimal interface the SSE helpers need. Both Node's Writable and the
@@ -76,10 +83,21 @@ void checkRegionOnColdStart();
 
 // ---- SSE helpers ----
 
-function sseEvent(stream: SseWritable, event: string, data: unknown): void {
-  // Best-effort write. If the stream has ended already, swallow.
+function sseEvent<N extends SSEEventName>(
+  stream: SseWritable,
+  event: N,
+  data: SSEEventPayload<N>
+): void {
+  // Schema-validate before serializing so we catch shape drift at the boundary
+  // rather than letting a malformed payload reach the client.
+  const schema = SSEEventSchemas[event];
+  const parsed = schema.safeParse(data);
+  if (!parsed.success) {
+    console.error(`[reason-stream] refusing to emit invalid event=${event}:`, parsed.error.flatten());
+    return;
+  }
   try {
-    const payload = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
+    const payload = `event: ${event}\ndata: ${JSON.stringify(parsed.data)}\n\n`;
     stream.write(payload);
   } catch (err) {
     console.warn(`[reason-stream] SSE write failed for event=${event}:`, err);
@@ -95,6 +113,9 @@ function emitErrorAndClose(
   sseEvent(stream, "done", {});
   stream.end();
 }
+
+// Placeholder detection + length/trim logic lives in `reason-schemas.ts`
+// via `normalizeHintField(raw)` which returns `string | null`.
 
 // ---- ElevenLabs streaming TTS ----
 //
@@ -215,29 +236,32 @@ export const handler = awslambda.streamifyResponse(
       return;
     }
 
-    // ---- Body ----
-    let body: ReasonRequestBody;
+    // ---- Body (Zod-validated) ----
+    let rawBody: unknown;
     try {
-      body = JSON.parse(event.body ?? "{}") as ReasonRequestBody;
+      rawBody = JSON.parse(event.body ?? "{}");
     } catch {
       emitErrorAndClose(httpStream, "internal", "invalid_json");
       return;
     }
 
-    if (!body.frames || !Array.isArray(body.frames)) {
-      emitErrorAndClose(httpStream, "internal", "missing_required_fields: frames");
+    const bodyParse = ReasonRequestSchema.safeParse(rawBody);
+    if (!bodyParse.success) {
+      console.warn("[reason-stream] request body failed validation:", bodyParse.error.flatten());
+      emitErrorAndClose(httpStream, "internal", "invalid_request_body");
       return;
     }
+    const body = bodyParse.data;
     const hasFrames = body.frames.length > 0;
-    if (!hasFrames && (!body.flags?.force_reply || !body.flags?.user_query)) {
+    if (!hasFrames && (!body.flags.force_reply || !body.flags.user_query)) {
       emitErrorAndClose(httpStream, "internal", "no_frames_requires_force_reply_and_query");
       return;
     }
-    const isForceReply = body.flags?.force_reply === true;
+    const isForceReply = body.flags.force_reply;
 
     // ---- Build messages (identical to /reason) ----
-    const priorAnalysis = body.current_analysis?.trim() || "(none yet - first pass)";
-    const userQuery = body.flags?.user_query?.trim() || "(none)";
+    const priorAnalysis = body.current_analysis.trim() || "(none yet - first pass)";
+    const userQuery = body.flags.user_query?.trim() || "(none)";
 
     const contentBlocks: ContentBlock[] = [];
 
@@ -247,14 +271,14 @@ export const handler = awslambda.streamifyResponse(
     });
     contentBlocks.push({
       type: "text",
-      text: `<event_log>\n${body.event_log ?? ""}\n</event_log>`,
+      text: `<event_log>\n${body.event_log}\n</event_log>`,
     });
     contentBlocks.push({
       type: "text",
-      text: `<flags>\nis_milo_speaking: ${body.flags?.is_milo_speaking ?? false}\nsoft_muted: ${body.flags?.soft_muted ?? false}\nforce_reply: ${body.flags?.force_reply ?? false}\nuser_query: ${userQuery}\nsession_id: ${body.session_id ?? ""}\n</flags>`,
+      text: `<flags>\nis_milo_speaking: ${body.flags.is_milo_speaking}\nsoft_muted: ${body.flags.soft_muted}\nforce_reply: ${body.flags.force_reply}\nuser_query: ${userQuery}\nsession_id: ${body.session_id}\n</flags>`,
     });
 
-    for (let i = 0; i < body.frames.length; i++) {
+    body.frames.forEach((frame, i) => {
       contentBlocks.push({
         type: "text",
         text: `<frame index="${i}">`,
@@ -264,10 +288,10 @@ export const handler = awslambda.streamifyResponse(
         source: {
           type: "base64",
           media_type: "image/jpeg",
-          data: body.frames[i],
+          data: frame,
         },
       });
-    }
+    });
 
     if (!hasFrames) {
       contentBlocks.push({
@@ -335,19 +359,18 @@ export const handler = awslambda.streamifyResponse(
             sseEvent(httpStream, "events", { lines: eventsLines });
             break;
           case "HINT": {
-            const trimmed = text.trim();
-            hintText = trimmed.length > 0 ? trimmed : null;
+            const normalized = normalizeHintField(text);
+            hintText = normalized;
             if (hintText) {
               sseEvent(httpStream, "hint_complete", { text: hintText });
             }
             break;
           }
           case "HINT_SPEECH": {
-            const trimmed = text.trim();
-            const fallback = hintText;
+            const normalized = normalizeHintField(text);
             // If HINT_SPEECH empty but HINT non-empty, fall back to HINT
             // (client sanitizes forbidden chars). Matches reason.ts behavior.
-            hintSpeechText = trimmed.length > 0 ? trimmed : fallback;
+            hintSpeechText = normalized ?? hintText;
             if (hintSpeechText) {
               sseEvent(httpStream, "hint_speech_complete", { text: hintSpeechText });
               // Fire TTS in parallel with the remaining Bedrock generation
@@ -373,10 +396,12 @@ export const handler = awslambda.streamifyResponse(
         parser.push(delta);
       }
       parser.finalize();
+      const hintPreview: string | null = hintText === null ? null : String(hintText).slice(0, 120);
+      const speechPreview: string | null = hintSpeechText === null ? null : String(hintSpeechText).slice(0, 120);
       console.log(
         "[reason-stream] hint=%j hint_speech=%j state=%s audio=%s",
-        hintText?.slice(0, 120) ?? null,
-        hintSpeechText?.slice(0, 120) ?? null,
+        hintPreview,
+        speechPreview,
         state,
         ttsPromise ? "fired" : "skipped"
       );
