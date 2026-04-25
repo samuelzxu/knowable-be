@@ -159,32 +159,9 @@ resource "aws_lambda_function" "waitlist" {
   }
 }
 
-resource "aws_lambda_function" "reason" {
-  function_name    = "knowable-reason"
-  filename         = "${path.module}/build/reason.zip"
-  source_code_hash = filebase64sha256("${path.module}/build/reason.zip")
-  role             = aws_iam_role.lambda_exec.arn
-  runtime          = "nodejs20.x"
-  handler          = "index.handler"
-  memory_size      = 1024
-  timeout          = 30
-
-  environment {
-    variables = merge(local.lambda_common_env, {
-      # Passive (vision) passes → Haiku 4.5 for throughput. Active queries
-      # (force_reply) → Sonnet 4.6 for answer quality.
-      REASON_MODEL_ID_PASSIVE = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
-      REASON_MODEL_ID_ACTIVE  = "us.anthropic.claude-sonnet-4-6"
-      DYNAMODB_TABLE_SESSIONS = aws_dynamodb_table.sessions.name
-      DYNAMODB_TABLE_MESSAGES = aws_dynamodb_table.messages.name
-    })
-  }
-}
-
-# Streaming sibling of the /reason Lambda. Uses Lambda Function URL with
-# RESPONSE_STREAM invoke mode so we can stream Bedrock tokens as SSE and
-# pipeline ElevenLabs TTS in parallel. The existing /reason Lambda above
-# stays as the fallback.
+# /reason-stream Lambda. Uses Lambda Function URL with RESPONSE_STREAM
+# invoke mode so we can stream Bedrock tokens as SSE and pipeline ElevenLabs
+# TTS in parallel.
 resource "aws_lambda_function" "reason_stream" {
   function_name    = "knowable-reason-stream"
   filename         = "${path.module}/build/reason-stream.zip"

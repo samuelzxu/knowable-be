@@ -96,14 +96,6 @@ resource "aws_apigatewayv2_integration" "waitlist" {
   payload_format_version = "2.0"
 }
 
-resource "aws_apigatewayv2_integration" "reason" {
-  api_id                 = aws_apigatewayv2_api.http.id
-  integration_type       = "AWS_PROXY"
-  integration_uri        = aws_lambda_function.reason.invoke_arn
-  integration_method     = "POST"
-  payload_format_version = "2.0"
-}
-
 # ---- Routes (JWT-protected) ----
 
 resource "aws_apigatewayv2_route" "post_hint" {
@@ -197,15 +189,6 @@ resource "aws_apigatewayv2_route" "get_messages" {
   authorizer_id      = aws_apigatewayv2_authorizer.cognito_jwt.id
 }
 
-# POST /reason — reasoning loop
-resource "aws_apigatewayv2_route" "post_reason" {
-  api_id             = aws_apigatewayv2_api.http.id
-  route_key          = "POST /reason"
-  target             = "integrations/${aws_apigatewayv2_integration.reason.id}"
-  authorization_type = "JWT"
-  authorizer_id      = aws_apigatewayv2_authorizer.cognito_jwt.id
-}
-
 # Public (no authorizer). Throttled at the route level via the stage's
 # route_settings block below.
 resource "aws_apigatewayv2_route" "post_waitlist" {
@@ -289,13 +272,6 @@ resource "aws_lambda_permission" "apigw_waitlist" {
   source_arn    = "${aws_apigatewayv2_api.http.execution_arn}/*/*"
 }
 
-resource "aws_lambda_permission" "apigw_reason" {
-  statement_id  = "AllowAPIGatewayInvokeReason"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.reason.function_name
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.http.execution_arn}/*/*"
-}
 
 # ---- Access log group + stage ----
 

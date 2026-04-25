@@ -1,32 +1,8 @@
-// Shared module for the /reason and /reason-stream handlers.
-// Houses the Milo SYSTEM_PROMPT, the ReasonRequest body shape, and the
-// section parser so both the non-streaming and streaming handlers stay
-// behaviorally identical. Do NOT edit SYSTEM_PROMPT except for additive
-// sections (the non-streaming handler must continue to produce the same
-// output shape as before).
-
-export interface ReasonRequestBody {
-  frames: string[];
-  event_log: string;
-  current_analysis: string;
-  flags: {
-    is_milo_speaking: boolean;
-    soft_muted: boolean;
-    force_reply: boolean;
-    user_query?: string;
-  };
-  session_id: string;
-}
+// Shared module for the /reason-stream handler. Houses the Milo
+// SYSTEM_PROMPT and the streaming section parser. The request body shape
+// lives in reason-schemas.ts (Zod-validated).
 
 export type ReasonState = "active" | "camera_lost" | "positioning_camera";
-
-export interface ParsedReasonResponse {
-  understanding: string;
-  events: string[];
-  hint: string | null;
-  hint_speech: string | null;
-  state: ReasonState;
-}
 
 export const SYSTEM_PROMPT = `You are Milo, a calm, curious tutor watching a high-school student solve a math or physics problem in a physical notebook through the Mac's Desk View camera. You are NOT a chatbot. You are an observer who speaks rarely and well.
 
@@ -41,7 +17,7 @@ export const SYSTEM_PROMPT = `You are Milo, a calm, curious tutor watching a hig
 - 1-3 JPEG frames from the last ~3 seconds of Desk View video (most recent last). The camera processes the frame automatically; you see what it sees. If the paper is not visible or out of frame, say so via STATE.
 - An append-only event log with [MM:SS] timestamps showing detector signals, prior observations, delivered hints, user queries, and Milo's own speech lifecycle events.
 - Your previous UNDERSTANDING (overwritten each pass, <=800 chars).
-- Flags: is_milo_speaking (bool), soft_muted (bool), force_reply (bool), user_query (string if present).
+- Flags: is_milo_speaking (bool), force_reply (bool), user_query (string if present).
 
 # Multi-frame reasoning
 When you have multiple frames, trust content that appears consistently in >=2 frames. If one frame shows a hand or glare blocking content you saw in another, rely on the clearer frame. The most recent frame (last) is the ground truth for "what is on the page RIGHT NOW." Earlier frames are tiebreakers.
@@ -74,15 +50,12 @@ If is_milo_speaking=true, a prior hint is still being read aloud. You MUST:
   - Keep updating UNDERSTANDING and EVENTS as normal.
   - Leave the HINT line completely blank (no text after the colon, no placeholder words, no "(empty)", no "N/A"). HINT_SPEECH must also be blank. Do NOT produce a new hint.
 
-# Soft-mute
-If soft_muted=true, the student explicitly asked you to stop talking. You MUST leave the HINT and HINT_SPEECH lines completely blank (literally nothing after the colon) unless force_reply=true (direct question from student overrides). Never write "(empty)" or any placeholder text — blank means zero characters.
-
 # Force reply
 If force_reply=true, the student just asked you something directly (see user_query). You MUST produce a HINT responding to their query. Style is still Socratic unless they explicitly asked for the answer ("just tell me the answer", "what's the answer"). In that case, give the answer AND a one-sentence justification.
 
 # When to emit HINT (decision rules, in order)
 1. If force_reply=true -> emit HINT (respond to user_query).
-2. Else if is_milo_speaking=true OR soft_muted=true -> do NOT emit HINT.
+2. Else if is_milo_speaking=true -> do NOT emit HINT.
 3. Else if the most recent \`hint_delivered\` event is within 45s AND no new progress or regression has occurred since -> do NOT emit HINT.
 4. Else if the student is actively writing (motion in most recent frame, no \`idle_start\` in last 8s) -> do NOT emit HINT. (Never interrupt mid-stroke.)
 5. Else consult the tutoring moment:
@@ -177,61 +150,6 @@ UNDERSTANDING and EVENTS can use any notation (they're internal, not displayed o
 - NEVER mention frames, passes, camera frames, "this pass", "no frames came through", image availability, or any system/pipeline internals to the student. The student only sees chat text and hears TTS - they have no concept of "frames". If you cannot see the page right now, phrase it as "I can't quite make out the page" or "show me again" - not "no frames".
 - Output the four sections in order. No extra commentary before or after.`;
 
-/**
- * Non-streaming parser. Splits the model's text response into sections by
- * detecting UNDERSTANDING / EVENTS / HINT / HINT_SPEECH / STATE headers.
- * Kept behavior-identical to the original parseReasonResponse in reason.ts.
- */
-export function parseReasonResponse(text: string): ParsedReasonResponse {
-  const sections: Record<string, string> = {};
-  const lines = text.split("\n");
-  let currentSection: string | null = null;
-  const sectionLines: string[] = [];
-
-  for (const line of lines) {
-    const headerMatch = /^(UNDERSTANDING|EVENTS|HINT_SPEECH|HINT|STATE):[ \t]*(.*)/i.exec(line);
-    if (headerMatch) {
-      if (currentSection !== null) {
-        sections[currentSection] = sectionLines.join("\n").trim();
-      }
-      currentSection = headerMatch[1].toUpperCase();
-      sectionLines.length = 0;
-      if (headerMatch[2].trim()) {
-        sectionLines.push(headerMatch[2].trim());
-      }
-    } else if (currentSection !== null) {
-      sectionLines.push(line);
-    }
-  }
-  if (currentSection !== null) {
-    sections[currentSection] = sectionLines.join("\n").trim();
-  }
-
-  const understanding = sections["UNDERSTANDING"] ?? "";
-
-  const eventsRaw = sections["EVENTS"] ?? "";
-  const events = eventsRaw
-    .split("\n")
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0);
-
-  const hintRaw = (sections["HINT"] ?? "").trim();
-  const hint = hintRaw.length > 0 ? hintRaw : null;
-
-  const hintSpeechRaw = (sections["HINT_SPEECH"] ?? "").trim();
-  const hint_speech = hintSpeechRaw.length > 0 ? hintSpeechRaw : hint;
-
-  const stateSection = sections["STATE"] ?? "";
-  const stateMatch = /\\boxed\{(\w+)\}/i.exec(stateSection);
-  const stateRaw = stateMatch ? stateMatch[1] : "active";
-  const validStates = ["active", "camera_lost", "positioning_camera"] as const;
-  const state = validStates.includes(stateRaw as (typeof validStates)[number])
-    ? (stateRaw as ReasonState)
-    : "active";
-
-  return { understanding, events, hint, hint_speech, state };
-}
-
 // ---- Streaming parser ----
 //
 // Incrementally processes Bedrock delta chunks. Section headers can appear
@@ -294,10 +212,10 @@ export function createStreamParser(cb: StreamParserCallbacks): StreamParser {
   function tryMatchHeader(s: string): { name: ReasonSectionName; rest: string } | null {
     // Match like: HINT_SPEECH: text
     const m = /^(UNDERSTANDING|EVENTS|HINT_SPEECH|HINT|STATE):[ \t]*(.*)$/s.exec(s);
-    if (!m) return null;
+    if (!m || !m[1]) return null;
     const name = m[1].toUpperCase() as ReasonSectionName;
     if (!HEADER_NAMES.includes(name)) return null;
-    return { name, rest: m[2] };
+    return { name, rest: m[2] ?? "" };
   }
 
   // Returns true if `s` could still become a header name with more input.

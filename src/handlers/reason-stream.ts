@@ -53,7 +53,6 @@ import {
 import {
   ReasonRequestSchema,
   SSEEventSchemas,
-  validateReasonResult,
   normalizeHintField,
   type ReasonState,
   type SSEEventName,
@@ -275,7 +274,7 @@ export const handler = awslambda.streamifyResponse(
     });
     contentBlocks.push({
       type: "text",
-      text: `<flags>\nis_milo_speaking: ${body.flags.is_milo_speaking}\nsoft_muted: ${body.flags.soft_muted}\nforce_reply: ${body.flags.force_reply}\nuser_query: ${userQuery}\nsession_id: ${body.session_id}\n</flags>`,
+      text: `<flags>\nis_milo_speaking: ${body.flags.is_milo_speaking}\nforce_reply: ${body.flags.force_reply}\nuser_query: ${userQuery}\nsession_id: ${body.session_id}\n</flags>`,
     });
 
     body.frames.forEach((frame, i) => {
@@ -396,15 +395,6 @@ export const handler = awslambda.streamifyResponse(
         parser.push(delta);
       }
       parser.finalize();
-      const hintPreview: string | null = hintText === null ? null : String(hintText).slice(0, 120);
-      const speechPreview: string | null = hintSpeechText === null ? null : String(hintSpeechText).slice(0, 120);
-      console.log(
-        "[reason-stream] hint=%j hint_speech=%j state=%s audio=%s",
-        hintPreview,
-        speechPreview,
-        state,
-        ttsPromise ? "fired" : "skipped"
-      );
     } catch (err) {
       console.error("[reason-stream] Bedrock stream failed mid-flight:", err);
       emitErrorAndClose(httpStream, "bedrock_error", "stream_failed");

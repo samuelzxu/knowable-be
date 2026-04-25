@@ -10,7 +10,6 @@ import { z } from "zod";
 
 export const ReasonFlagsSchema = z.object({
   is_milo_speaking: z.boolean().default(false),
-  soft_muted: z.boolean().default(false),
   force_reply: z.boolean().default(false),
   user_query: z.string().max(1000).optional(),
 });
@@ -72,23 +71,6 @@ export const ReasonResultSchema = z.object({
 });
 
 export type ReasonResult = z.infer<typeof ReasonResultSchema>;
-
-/** Safe-parse + degrade: validation errors log but don't abort the response. */
-export function validateReasonResult(raw: unknown): ReasonResult {
-  const parsed = ReasonResultSchema.safeParse(raw);
-  if (parsed.success) return parsed.data;
-  console.warn("[reason-schemas] parsed result failed validation:", parsed.error.flatten());
-  // Degrade: fall back to safe defaults. The client will just see no hint.
-  return {
-    understanding: typeof (raw as { understanding?: unknown })?.understanding === "string"
-      ? String((raw as { understanding: string }).understanding).slice(0, 2000)
-      : "",
-    events: [],
-    hint: null,
-    hint_speech: null,
-    state: "active",
-  };
-}
 
 // ---- SSE event payloads ------------------------------------------------------
 
