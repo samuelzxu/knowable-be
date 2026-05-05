@@ -57,8 +57,23 @@ vi.mock("@aws-sdk/lib-dynamodb", () => {
   const PutCommand = vi.fn().mockImplementation((input: unknown) => input);
   const GetCommand = vi.fn().mockImplementation((input: unknown) => input);
   const QueryCommand = vi.fn().mockImplementation((input: unknown) => input);
+  const UpdateCommand = vi.fn().mockImplementation((input: unknown) => input);
+  const DeleteCommand = vi.fn().mockImplementation((input: unknown) => input);
+  const BatchWriteCommand = vi.fn().mockImplementation((input: unknown) => input);
+  const BatchGetCommand = vi.fn().mockImplementation((input: unknown) => input);
+  const ScanCommand = vi.fn().mockImplementation((input: unknown) => input);
 
-  return { DynamoDBDocumentClient, PutCommand, GetCommand, QueryCommand };
+  return {
+    DynamoDBDocumentClient,
+    PutCommand,
+    GetCommand,
+    QueryCommand,
+    UpdateCommand,
+    DeleteCommand,
+    BatchWriteCommand,
+    BatchGetCommand,
+    ScanCommand,
+  };
 });
 
 vi.mock("@aws-sdk/client-secrets-manager", () => {

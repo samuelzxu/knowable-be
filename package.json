@@ -12,7 +12,10 @@
     "build:lambdas": "npm run build && npm run package",
     "test": "vitest run",
     "dev": "tsx src/local/server.ts",
-    "typecheck": "tsc --noEmit"
+    "seed-demo": "tsx scripts/seed-demo.ts",
+    "create-invite": "tsx scripts/create-invite.ts",
+    "typecheck": "tsc --noEmit",
+    "typecheck:seed": "tsc --noEmit --project scripts/tsconfig.json"
   },
   "dependencies": {
     "@aws-sdk/client-bedrock-runtime": "^3.758.0",

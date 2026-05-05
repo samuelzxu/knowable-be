@@ -4,7 +4,7 @@ resource "aws_apigatewayv2_api" "http" {
 
   cors_configuration {
     allow_origins = ["*"]
-    allow_methods = ["GET", "POST", "PATCH", "OPTIONS"]
+    allow_methods = ["GET", "POST", "PATCH", "DELETE", "OPTIONS"]
     allow_headers = ["authorization", "content-type"]
     max_age       = 600
   }
@@ -92,6 +92,33 @@ resource "aws_apigatewayv2_integration" "waitlist" {
   api_id                 = aws_apigatewayv2_api.http.id
   integration_type       = "AWS_PROXY"
   integration_uri        = aws_lambda_function.waitlist.invoke_arn
+  integration_method     = "POST"
+  payload_format_version = "2.0"
+}
+
+# Educator tools (v0). See .omc/design/educator-tools/02-architecture.md §6 Day 2.
+
+resource "aws_apigatewayv2_integration" "classes" {
+  api_id                 = aws_apigatewayv2_api.http.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.classes.invoke_arn
+  integration_method     = "POST"
+  payload_format_version = "2.0"
+}
+
+resource "aws_apigatewayv2_integration" "educator" {
+  api_id                 = aws_apigatewayv2_api.http.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.educator.invoke_arn
+  integration_method     = "POST"
+  payload_format_version = "2.0"
+}
+
+# Day 3: student-side share uploads.
+resource "aws_apigatewayv2_integration" "share" {
+  api_id                 = aws_apigatewayv2_api.http.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.share.invoke_arn
   integration_method     = "POST"
   payload_format_version = "2.0"
 }
@@ -198,6 +225,103 @@ resource "aws_apigatewayv2_route" "post_waitlist" {
   authorization_type = "NONE"
 }
 
+# Educator tools (v0). 6 routes on the classes Lambda + 1 on the educator
+# Lambda. All JWT-gated; per-route educator-vs-student authorization is
+# enforced inside the handler via `isEducator()`.
+
+resource "aws_apigatewayv2_route" "post_classes" {
+  api_id             = aws_apigatewayv2_api.http.id
+  route_key          = "POST /classes"
+  target             = "integrations/${aws_apigatewayv2_integration.classes.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_jwt.id
+}
+
+resource "aws_apigatewayv2_route" "get_classes" {
+  api_id             = aws_apigatewayv2_api.http.id
+  route_key          = "GET /classes"
+  target             = "integrations/${aws_apigatewayv2_integration.classes.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_jwt.id
+}
+
+# Specific path before {id} so API Gateway routes /classes/membership to the
+# membership branch instead of treating "membership" as the id parameter.
+resource "aws_apigatewayv2_route" "get_classes_membership" {
+  api_id             = aws_apigatewayv2_api.http.id
+  route_key          = "GET /classes/membership"
+  target             = "integrations/${aws_apigatewayv2_integration.classes.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_jwt.id
+}
+
+resource "aws_apigatewayv2_route" "get_class_by_id" {
+  api_id             = aws_apigatewayv2_api.http.id
+  route_key          = "GET /classes/{id}"
+  target             = "integrations/${aws_apigatewayv2_integration.classes.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_jwt.id
+}
+
+resource "aws_apigatewayv2_route" "post_classes_join" {
+  api_id             = aws_apigatewayv2_api.http.id
+  route_key          = "POST /classes/join"
+  target             = "integrations/${aws_apigatewayv2_integration.classes.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_jwt.id
+}
+
+resource "aws_apigatewayv2_route" "delete_class_member" {
+  api_id             = aws_apigatewayv2_api.http.id
+  route_key          = "DELETE /classes/{id}/members/{studentId}"
+  target             = "integrations/${aws_apigatewayv2_integration.classes.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_jwt.id
+}
+
+resource "aws_apigatewayv2_route" "post_educator_register" {
+  api_id             = aws_apigatewayv2_api.http.id
+  route_key          = "POST /educator/register"
+  target             = "integrations/${aws_apigatewayv2_integration.educator.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_jwt.id
+}
+
+# Day 3: educator dashboard + on-demand Bedrock-Opus analysis.
+resource "aws_apigatewayv2_route" "get_educator_dashboard" {
+  api_id             = aws_apigatewayv2_api.http.id
+  route_key          = "GET /educator/dashboard/{classId}"
+  target             = "integrations/${aws_apigatewayv2_integration.educator.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_jwt.id
+}
+
+resource "aws_apigatewayv2_route" "post_educator_analyze" {
+  api_id             = aws_apigatewayv2_api.http.id
+  route_key          = "POST /educator/analyze"
+  target             = "integrations/${aws_apigatewayv2_integration.educator.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_jwt.id
+}
+
+# Day 3: student-side share uploads. Both routes are JWT-gated and the
+# membership check + Zod whitelist live in the share handler.
+resource "aws_apigatewayv2_route" "post_share_stats" {
+  api_id             = aws_apigatewayv2_api.http.id
+  route_key          = "POST /classes/{classId}/share-stats"
+  target             = "integrations/${aws_apigatewayv2_integration.share.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_jwt.id
+}
+
+resource "aws_apigatewayv2_route" "post_share_trace" {
+  api_id             = aws_apigatewayv2_api.http.id
+  route_key          = "POST /classes/{classId}/share-trace"
+  target             = "integrations/${aws_apigatewayv2_integration.share.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_jwt.id
+}
+
 # ---- Lambda permissions ----
 
 resource "aws_lambda_permission" "apigw_hint" {
@@ -268,6 +392,30 @@ resource "aws_lambda_permission" "apigw_waitlist" {
   statement_id  = "AllowAPIGatewayInvokeWaitlist"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.waitlist.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.http.execution_arn}/*/*"
+}
+
+resource "aws_lambda_permission" "apigw_classes" {
+  statement_id  = "AllowAPIGatewayInvokeClasses"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.classes.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.http.execution_arn}/*/*"
+}
+
+resource "aws_lambda_permission" "apigw_educator" {
+  statement_id  = "AllowAPIGatewayInvokeEducator"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.educator.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.http.execution_arn}/*/*"
+}
+
+resource "aws_lambda_permission" "apigw_share" {
+  statement_id  = "AllowAPIGatewayInvokeShare"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.share.function_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.http.execution_arn}/*/*"
 }

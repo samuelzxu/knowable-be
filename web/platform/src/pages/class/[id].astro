@@ -1,0 +1,17 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { ClassDetailIsland } from "../../components/ClassDetailIsland";
+
+// Static-build placeholder. The real classId is read at runtime from
+// `window.location.pathname` inside ClassDetailIsland — CloudFront is
+// configured to serve `/class/<any-id>/index.html` from this single file.
+export function getStaticPaths() {
+  return [{ params: { id: "_" } }];
+}
+---
+
+<BaseLayout title="Class — Knowable for Educators">
+  <main class="flex-1 min-h-screen bg-knowable-cream">
+    <ClassDetailIsland client:load />
+  </main>
+</BaseLayout>

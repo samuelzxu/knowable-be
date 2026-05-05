@@ -58,44 +58,57 @@ variable "alt_domain_names" {
   default     = ["www.knowable.ca"]
 }
 
+variable "platform_domain_name" {
+  description = "Subdomain hosting the educator-tools web app (sibling to the landing site)."
+  type        = string
+  default     = "platform.knowable.ca"
+}
+
 # ---- Apple Sign-In ----
+# DEPRECATED (CRIT-1, audit 2026-05-04): credentials moved to AWS Secrets
+# Manager (knowable/apple-signin). Variables retained with empty defaults
+# so terraform does not error if older .env.tfvars files still set them.
+# Safe to delete after one release cycle once all developer machines are
+# updated. See infrastructure/SECRETS-ROTATION.md.
 
 variable "apple_services_id" {
-  description = "Apple Services ID (e.g. ca.knowable.auth) registered in the Apple Developer Portal."
+  description = "DEPRECATED: now read from Secrets Manager (knowable/apple-signin -> services_id)."
   type        = string
   default     = ""
 }
 
 variable "apple_team_id" {
-  description = "Apple Developer Team ID."
+  description = "DEPRECATED: now read from Secrets Manager (knowable/apple-signin -> team_id)."
   type        = string
   default     = ""
 }
 
 variable "apple_key_id" {
-  description = "Apple Sign-In key ID associated with the private key."
+  description = "DEPRECATED: now read from Secrets Manager (knowable/apple-signin -> key_id)."
   type        = string
   default     = ""
 }
 
 variable "apple_private_key" {
-  description = "Apple Sign-In private key (PEM). Sourced from gitignored .env.tfvars."
+  description = "DEPRECATED: now read from Secrets Manager (knowable/apple-signin -> private_key)."
   type        = string
   default     = ""
   sensitive   = true
 }
 
 # ---- Google Sign-In ----
+# DEPRECATED (CRIT-1, audit 2026-05-04): credentials moved to AWS Secrets
+# Manager (knowable/google-oauth). See infrastructure/SECRETS-ROTATION.md.
 
 variable "google_client_id" {
-  description = "Google OAuth 2.0 client ID used for Sign in with Google."
+  description = "DEPRECATED: now read from Secrets Manager (knowable/google-oauth -> client_id)."
   type        = string
   default     = ""
   sensitive   = true
 }
 
 variable "google_client_secret" {
-  description = "Google OAuth 2.0 client secret used for Sign in with Google."
+  description = "DEPRECATED: now read from Secrets Manager (knowable/google-oauth -> client_secret)."
   type        = string
   default     = ""
   sensitive   = true

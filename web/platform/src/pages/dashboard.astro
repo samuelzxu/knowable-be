@@ -1,0 +1,10 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { ClassList } from "../components/ClassList";
+---
+
+<BaseLayout title="Dashboard — Knowable for Educators">
+  <main class="flex-1 min-h-screen bg-knowable-cream">
+    <ClassList client:load />
+  </main>
+</BaseLayout>

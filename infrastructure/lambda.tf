@@ -159,6 +159,75 @@ resource "aws_lambda_function" "waitlist" {
   }
 }
 
+# Educator tools (v0). See .omc/design/educator-tools/02-architecture.md §6 Day 2.
+
+resource "aws_lambda_function" "classes" {
+  function_name    = "knowable-classes"
+  filename         = "${path.module}/build/classes.zip"
+  source_code_hash = filebase64sha256("${path.module}/build/classes.zip")
+  role             = aws_iam_role.lambda_exec.arn
+  runtime          = "nodejs20.x"
+  handler          = "index.handler"
+  memory_size      = 256
+  timeout          = 15
+
+  environment {
+    variables = merge(local.lambda_common_env, {
+      DYNAMODB_TABLE_ROLES         = aws_dynamodb_table.roles.name
+      DYNAMODB_TABLE_CLASSES       = aws_dynamodb_table.classes.name
+      DYNAMODB_TABLE_CLASS_MEMBERS = aws_dynamodb_table.class_members.name
+    })
+  }
+}
+
+resource "aws_lambda_function" "educator" {
+  function_name    = "knowable-educator"
+  filename         = "${path.module}/build/educator.zip"
+  source_code_hash = filebase64sha256("${path.module}/build/educator.zip")
+  role             = aws_iam_role.lambda_exec.arn
+  runtime          = "nodejs20.x"
+  handler          = "index.handler"
+  # Day 3: Bedrock-Opus calls take time. Higher memory for faster JSON parse
+  # of the prompt + response, longer timeout for the model itself.
+  memory_size = 512
+  timeout     = 60
+
+  environment {
+    variables = merge(local.lambda_common_env, {
+      DYNAMODB_TABLE_ROLES          = aws_dynamodb_table.roles.name
+      DYNAMODB_TABLE_CLASSES        = aws_dynamodb_table.classes.name
+      DYNAMODB_TABLE_CLASS_MEMBERS  = aws_dynamodb_table.class_members.name
+      DYNAMODB_TABLE_SESSION_TRACES = aws_dynamodb_table.session_traces.name
+      DYNAMODB_TABLE_ANALYSES       = aws_dynamodb_table.analyses.name
+      DYNAMODB_TABLE_SESSIONS       = aws_dynamodb_table.sessions.name
+      # Day 3 §11: force the educator-analyze path to Opus 4.6 even if the
+      # global var.bedrock_model_id is something cheaper for /hint.
+      BEDROCK_MODEL_ID        = "us.anthropic.claude-opus-4-6-v1"
+      DAILY_BEDROCK_TOKEN_CAP = "100000"
+    })
+  }
+}
+
+# Day 3: student-side share uploads (stats + traces). Whitelisted Zod
+# schemas in src/lib/share-schemas.ts gate what's accepted.
+resource "aws_lambda_function" "share" {
+  function_name    = "knowable-share"
+  filename         = "${path.module}/build/share.zip"
+  source_code_hash = filebase64sha256("${path.module}/build/share.zip")
+  role             = aws_iam_role.lambda_share.arn
+  runtime          = "nodejs20.x"
+  handler          = "index.handler"
+  memory_size      = 256
+  timeout          = 15
+
+  environment {
+    variables = merge(local.lambda_common_env, {
+      DYNAMODB_TABLE_CLASS_MEMBERS  = aws_dynamodb_table.class_members.name
+      DYNAMODB_TABLE_SESSION_TRACES = aws_dynamodb_table.session_traces.name
+    })
+  }
+}
+
 # /reason-stream Lambda. Uses Lambda Function URL with RESPONSE_STREAM
 # invoke mode so we can stream Bedrock tokens as SSE and pipeline ElevenLabs
 # TTS in parallel.

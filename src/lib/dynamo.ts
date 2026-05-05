@@ -10,6 +10,19 @@ const TABLE_TELEMETRY = process.env["DYNAMODB_TABLE_TELEMETRY"] ?? "knowable-tel
 const TABLE_CONFIG = process.env["DYNAMODB_TABLE_CONFIG"] ?? "knowable-config";
 const TABLE_MESSAGES = process.env["DYNAMODB_TABLE_MESSAGES"] ?? "knowable-messages";
 
+// Educator tools (v0). Exported so the new roles/classes lib modules
+// reference table names through this single source of truth.
+export const TABLE_ROLES = process.env["DYNAMODB_TABLE_ROLES"] ?? "knowable-roles";
+export const TABLE_CLASSES = process.env["DYNAMODB_TABLE_CLASSES"] ?? "knowable-classes";
+export const TABLE_CLASS_MEMBERS =
+  process.env["DYNAMODB_TABLE_CLASS_MEMBERS"] ?? "knowable-class-members";
+export const TABLE_SESSION_TRACES =
+  process.env["DYNAMODB_TABLE_SESSION_TRACES"] ?? "knowable-session-traces";
+export const TABLE_ANALYSES =
+  process.env["DYNAMODB_TABLE_ANALYSES"] ?? "knowable-analyses";
+export const TABLE_EDUCATOR_INVITES =
+  process.env["DYNAMODB_TABLE_EDUCATOR_INVITES"] ?? "knowable-educator-invites";
+
 let _client: DynamoDBDocumentClient | null = null;
 
 export function getDocumentClient(): DynamoDBDocumentClient {

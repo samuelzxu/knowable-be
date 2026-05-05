@@ -1,13 +1,34 @@
+# Apple Sign-In identity provider.
+#
+# Credentials live in AWS Secrets Manager (knowable/apple-signin) — see
+# secretsmanager.tf and SECRETS-ROTATION.md. The data source below reads
+# the JSON blob at apply-time. The four-tuple (private_key, team_id,
+# key_id, services_id) is stored together for atomic rotation.
+#
+# IMPORTANT: For first-time apply on a fresh AWS account the secret
+# container does not yet exist as a populated value, so this data source
+# will fail. The runbook describes the two-stage flow:
+#   stage 1: apply only the secret containers
+#   stage 2: operator put-secret-value, then apply the rest
+data "aws_secretsmanager_secret_version" "apple_signin" {
+  secret_id  = aws_secretsmanager_secret.apple_signin.id
+  depends_on = [aws_secretsmanager_secret.apple_signin]
+}
+
+locals {
+  apple_signin = jsondecode(data.aws_secretsmanager_secret_version.apple_signin.secret_string)
+}
+
 resource "aws_cognito_identity_provider" "apple" {
   user_pool_id  = aws_cognito_user_pool.main.id
   provider_name = "SignInWithApple"
   provider_type = "SignInWithApple"
 
   provider_details = {
-    client_id                     = var.apple_services_id
-    team_id                       = var.apple_team_id
-    key_id                        = var.apple_key_id
-    private_key                   = var.apple_private_key
+    client_id                     = local.apple_signin.services_id
+    team_id                       = local.apple_signin.team_id
+    key_id                        = local.apple_signin.key_id
+    private_key                   = local.apple_signin.private_key
     authorize_scopes              = "email name"
     authorize_url                 = "https://appleid.apple.com/auth/authorize"
     token_url                     = "https://appleid.apple.com/auth/token"

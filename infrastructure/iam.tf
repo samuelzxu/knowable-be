@@ -11,6 +11,17 @@ locals {
     aws_dynamodb_table.config.arn,
     aws_dynamodb_table.waitlist.arn,
     aws_dynamodb_table.messages.arn,
+    # Educator tools (v0). Each table that has GSIs also needs its index ARNs
+    # so Query against `code-index`, `student-index`, `class-time-index` works.
+    aws_dynamodb_table.roles.arn,
+    aws_dynamodb_table.classes.arn,
+    "${aws_dynamodb_table.classes.arn}/index/*",
+    aws_dynamodb_table.class_members.arn,
+    "${aws_dynamodb_table.class_members.arn}/index/*",
+    aws_dynamodb_table.session_traces.arn,
+    "${aws_dynamodb_table.session_traces.arn}/index/*",
+    aws_dynamodb_table.analyses.arn,
+    aws_dynamodb_table.educator_invites.arn,
   ]
 
   bedrock_model_arn = "arn:aws:bedrock:${var.region}::foundation-model/${var.bedrock_model_id}"
@@ -27,9 +38,80 @@ data "aws_iam_policy_document" "lambda_assume" {
   }
 }
 
+# `lambda_exec` is the legacy shared role. Most Lambdas still use it.
+# The student-invoked `share` Lambda is exempted — see `lambda_share`
+# below for the scoped role. Per-Lambda IAM split for the remaining
+# Lambdas is tracked as post-Kaggle work in the security audit
+# `## Recommendations beyond findings`.
 resource "aws_iam_role" "lambda_exec" {
   name               = "knowable-lambda-exec"
   assume_role_policy = data.aws_iam_policy_document.lambda_assume.json
+}
+
+# Restricted role for the share Lambda — student-invoked, only needs to:
+#  - Update `sharingTier` on knowable-class-members (UpdateItem)
+#  - Put session traces (PutItem) into knowable-session-traces
+#  - Read knowable-classes + knowable-class-members for membership validation
+# Critically does NOT have write on knowable-roles, so a compromised share
+# Lambda cannot self-elevate to educator. Closes [CRIT-2] from the
+# 2026-05-04 security audit.
+resource "aws_iam_role" "lambda_share" {
+  name = "knowable-lambda-share"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action    = "sts:AssumeRole"
+      Effect    = "Allow"
+      Principal = { Service = "lambda.amazonaws.com" }
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_share_basic" {
+  role       = aws_iam_role.lambda_share.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+resource "aws_iam_role_policy" "lambda_share_dynamo" {
+  name = "lambda-share-dynamo"
+  role = aws_iam_role.lambda_share.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:GetItem",
+          "dynamodb:Query",
+        ]
+        Resource = [
+          aws_dynamodb_table.classes.arn,
+          aws_dynamodb_table.class_members.arn,
+          "${aws_dynamodb_table.class_members.arn}/index/*",
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:UpdateItem",
+        ]
+        Resource = [
+          aws_dynamodb_table.class_members.arn,
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:PutItem",
+        ]
+        Resource = [
+          aws_dynamodb_table.session_traces.arn,
+        ]
+      },
+    ]
+  })
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_basic" {
@@ -67,8 +149,8 @@ resource "aws_iam_role_policy" "dynamodb_rw" {
 
 data "aws_iam_policy_document" "secretsmanager_read" {
   statement {
-    effect    = "Allow"
-    actions   = ["secretsmanager:GetSecretValue"]
+    effect  = "Allow"
+    actions = ["secretsmanager:GetSecretValue"]
     resources = [
       aws_secretsmanager_secret.turnstile.arn,
       aws_secretsmanager_secret.elevenlabs.arn,
