@@ -20,6 +20,10 @@ export const ReasonRequestSchema = z.object({
   current_analysis: z.string().max(2000).default(""),
   flags: ReasonFlagsSchema,
   session_id: z.string().max(128).default(""),
+  // "elevenlabs" → server generates + streams TTS audio (default).
+  // "off"        → client will synthesize locally; server skips the
+  //                ElevenLabs call to save cost and latency.
+  tts: z.enum(["elevenlabs", "off"]).default("elevenlabs"),
 });
 
 export type ReasonRequest = z.infer<typeof ReasonRequestSchema>;

@@ -76,6 +76,7 @@ describe("joinClass", () => {
       classId: "class-1",
       className: "AP Calc",
       educatorDisplayName: "Ms. Smith",
+      sharingTier: "off",
     });
     expect(mockSend).toHaveBeenCalledTimes(4);
   });

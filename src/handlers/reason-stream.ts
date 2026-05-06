@@ -374,11 +374,15 @@ export const handler = awslambda.streamifyResponse(
               sseEvent(httpStream, "hint_speech_complete", { text: hintSpeechText });
               // Fire TTS in parallel with the remaining Bedrock generation
               // (STATE section). This is the core latency win.
-              ttsPromise = streamTtsToClient(
-                httpStream,
-                hintSpeechText,
-                ELEVENLABS_DEFAULT_VOICE_ID
-              );
+              // Skip when the client signaled `tts: "off"` — it'll synthesize
+              // the hint locally and the audio_* events would be discarded.
+              if (body.tts !== "off") {
+                ttsPromise = streamTtsToClient(
+                  httpStream,
+                  hintSpeechText,
+                  ELEVENLABS_DEFAULT_VOICE_ID
+                );
+              }
             }
             break;
           }
