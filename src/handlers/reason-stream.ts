@@ -44,6 +44,7 @@ import type { AnthropicMessage, ContentBlock } from "../lib/bedrock.js";
 import { verifyJwt, extractBearerToken } from "../lib/auth.js";
 import { updateSessionAnalysis, putMessage } from "../lib/dynamo.js";
 import { getElevenLabsApiKey } from "../lib/elevenlabs.js";
+import { captureTrace } from "../lib/trace-capture.js";
 import {
   SYSTEM_PROMPT,
   createStreamParser,
@@ -299,12 +300,17 @@ export const handler = awslambda.streamifyResponse(
           "No image is available on this pass. Answer the student's user_query from prior UNDERSTANDING + event_log. " +
           "Do NOT mention anything about frames, camera availability, or repositioning - the student does not know frames are a concept. " +
           "If you genuinely cannot answer without seeing the page, give your best inference from prior notes and invite them to show you. " +
-          "Produce UNDERSTANDING (keep or lightly update prior), EVENTS, HINT, HINT_SPEECH, STATE in that exact order. HINT is required.",
+          "Produce UNDERSTANDING (keep or lightly update prior), EVENTS, HINT, HINT_SPEECH, STATE in that exact order. force_reply=true on this pass, so HINT and HINT_SPEECH must be non-empty.",
+      });
+    } else if (isForceReply) {
+      contentBlocks.push({
+        type: "text",
+        text: "Produce UNDERSTANDING, EVENTS, HINT, HINT_SPEECH, STATE in that exact order. force_reply=true on this pass, so HINT and HINT_SPEECH must be non-empty.",
       });
     } else {
       contentBlocks.push({
         type: "text",
-        text: "Produce UNDERSTANDING, EVENTS, HINT, HINT_SPEECH, STATE in that exact order.",
+        text: "Produce UNDERSTANDING, EVENTS, HINT, HINT_SPEECH, STATE in that exact order. force_reply=false on this pass, so leave HINT and HINT_SPEECH blank.",
       });
     }
 
@@ -442,6 +448,42 @@ export const handler = awslambda.streamifyResponse(
           console.warn("[reason-stream] Failed to persist hint message:", err);
         }
       }
+    }
+
+    // ---- Fine-tune trace capture (best-effort) ----
+    // Hard rule: never throws. The captureTrace function swallows all errors
+    // internally so a misbehaving S3 client / bucket misconfig / cold-start
+    // hiccup can't break the user-facing stream. Runs sequentially before
+    // tokens+done so the Lambda runtime doesn't kill the upload by exiting;
+    // it only fires when the client opted in via `capture: true`, so this
+    // adds latency to opted-in dev sessions only.
+    if (body.capture) {
+      await captureTrace({
+        userId,
+        sessionId: body.session_id,
+        modelId,
+        systemPrompt: SYSTEM_PROMPT,
+        request: {
+          eventLog: body.event_log,
+          currentAnalysis: body.current_analysis,
+          flags: {
+            is_milo_speaking: body.flags?.is_milo_speaking ?? false,
+            force_reply: body.flags?.force_reply ?? false,
+            user_query: body.flags?.user_query,
+          },
+          framesBase64: body.frames,
+        },
+        response: {
+          rawText: parser.getRaw(),
+          parsed: {
+            understanding,
+            events: eventsLines,
+            hint: hintText,
+            hintSpeech: hintSpeechText,
+            state,
+          },
+        },
+      });
     }
 
     // ---- Tokens + done ----

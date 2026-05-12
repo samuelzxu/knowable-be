@@ -1,0 +1,21 @@
+# Fine-tune Gemma 4 E4B from Sonnet traces.
+# Tested on Lambda Labs 1× H100 (80GB, CUDA 12.x, Ubuntu 22.04, Python 3.10/3.11).
+#
+# Install:
+#   pip install -r requirements.txt
+#
+# If Gemma 4 support isn't yet on a tagged release, install transformers
+# from main: pip install -U "git+https://github.com/huggingface/transformers.git"
+
+torch>=2.5.0
+transformers>=4.51.0
+trl>=0.15.0
+peft>=0.13.0
+accelerate>=1.0.0
+datasets>=3.0.0
+bitsandbytes>=0.44.0
+Pillow>=10.0.0
+boto3>=1.35.0
+sentencepiece>=0.2.0
+protobuf>=4.25.0
+huggingface_hub>=0.26.0

@@ -243,12 +243,16 @@ resource "aws_lambda_function" "reason_stream" {
 
   environment {
     variables = merge(local.lambda_common_env, {
-      REASON_MODEL_ID_PASSIVE     = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
-      REASON_MODEL_ID_ACTIVE      = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
+      REASON_MODEL_ID_PASSIVE     = "us.anthropic.claude-sonnet-4-6"
+      REASON_MODEL_ID_ACTIVE      = "us.anthropic.claude-sonnet-4-6"
       ELEVENLABS_SECRET_NAME      = aws_secretsmanager_secret.elevenlabs.name
       ELEVENLABS_DEFAULT_VOICE_ID = var.elevenlabs_default_voice_id
       DYNAMODB_TABLE_SESSIONS     = aws_dynamodb_table.sessions.name
       DYNAMODB_TABLE_MESSAGES     = aws_dynamodb_table.messages.name
+      # Capture (frames, request_context, sonnet_response) tuples when the
+      # client request body has `capture: true`. Bucket defined in
+      # finetune.tf with IAM grant attached to lambda_exec.
+      FINETUNE_TRACE_BUCKET       = aws_s3_bucket.finetune_traces.id
     })
   }
 }

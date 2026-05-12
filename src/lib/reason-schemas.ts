@@ -24,6 +24,11 @@ export const ReasonRequestSchema = z.object({
   // "off"        → client will synthesize locally; server skips the
   //                ElevenLabs call to save cost and latency.
   tts: z.enum(["elevenlabs", "off"]).default("elevenlabs"),
+  // When true, server fire-and-forgets a copy of (frames, request, response)
+  // to the FINETUNE_TRACE_BUCKET S3 bucket for later distillation into
+  // Gemma 4 E4B. Toggled by the developer in client settings; defaults to
+  // false so normal user traffic doesn't accumulate captures.
+  capture: z.boolean().default(false),
 });
 
 export type ReasonRequest = z.infer<typeof ReasonRequestSchema>;
