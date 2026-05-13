@@ -1,0 +1,11 @@
+# Requirements for the Knowable fine-tuning exploration notebook.
+# Install: pip install -r notebook_requirements.txt
+
+jupyter>=1.0.0
+ipywidgets>=8.0.0
+Pillow>=10.0.0
+matplotlib>=3.8.0
+pandas>=2.0.0
+boto3>=1.35.0
+huggingface_hub>=0.26.0
+requests>=2.31.0
