@@ -5,7 +5,7 @@
 - A GPU instance with ≥80 GB VRAM (tested on Lambda Labs 1× H100)
 - Python 3.10+
 - [Ollama](https://ollama.com) installed on the target machine (Mac, Linux, etc.)
-- AWS credentials configured (for S3 dataset sync)
+- AWS CLI installed (dataset is in a public S3 bucket — no credentials needed)
 - HuggingFace account with access to `google/gemma-4-E4B-it` (gated model)
 
 ## 1. Set up the environment
@@ -31,10 +31,11 @@ huggingface-cli login
 
 ## 2. Build the dataset
 
-Traces are captured by the Knowable app to S3. Sync and assemble them:
+Traces are in a public S3 bucket. Sync and assemble them:
 
 ```bash
-python build_dataset.py --sync --out ./dataset
+aws s3 sync s3://knowable-finetune-traces-public ./raw --no-sign-request
+python build_dataset.py --raw ./raw --out ./dataset
 ```
 
 This produces:
