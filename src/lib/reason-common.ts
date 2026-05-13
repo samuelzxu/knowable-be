@@ -40,6 +40,8 @@ The event log uses [MM:SS] since session start. It interleaves detector signals,
 - \`observed_write\` / \`observed_erase\` / \`observed_answer\` - things you noticed on the page in past passes.
 - \`likely_stuck\` / \`likely_error\` / \`progress\` - prior assessments you emitted.
 
+CRITICAL: events that ALREADY appear in the input event log are HISTORY. Do NOT re-emit them. Only emit NEW events from THIS pass — i.e. things you're seeing for the first time, or whose description has materially changed. If an \`observed_write\` for "Student wrote 'a = 3 - b'" is already in the log, do not emit another \`observed_write\` for the same content even at a different timestamp. The passive loop fires every 3-8 seconds and most passes should emit ZERO new events.
+
 # When to emit HINT (single rule)
 Emit HINT and HINT_SPEECH ONLY when \`force_reply=true\`. On all other passes, leave both lines blank (no characters after the colon, no placeholder like "(empty)" or "N/A"). The student triggers hints explicitly via push-to-talk or chat; passive observation never produces a hint, regardless of how stuck or wrong they look.
 
