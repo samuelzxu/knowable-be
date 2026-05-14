@@ -1,5 +1,7 @@
 # Fine-Tuning Gemma 4 E4B & Loading into Ollama
 
+> **See also:** Google's official [Gemma Cookbook](https://github.com/google-gemma/cookbook) — in particular [`docs/core/huggingface_vision_finetune_qlora.ipynb`](https://github.com/google-gemma/cookbook/blob/main/docs/core/huggingface_vision_finetune_qlora.ipynb) which covers the same PEFT + TRL + QLoRA pipeline for Gemma 4 vision models.
+
 ## Prerequisites
 
 - A GPU instance with ≥80 GB VRAM (tested on Lambda Labs 1× H100)
