@@ -7,8 +7,13 @@
 #
 # Stage 2 (runtime): node:20-slim, production deps only, dist/. Runs as
 # non-root `node` user.
+#
+# Base image is pinned to ECR Public (`public.ecr.aws/docker/library/...`)
+# rather than Docker Hub. CodeBuild runs from a shared IP pool that
+# routinely hits Docker Hub's 100 pulls / 6h anonymous limit. AWS-to-AWS
+# pulls of the ECR Public mirror don't count against any rate limit.
 
-FROM node:20-slim AS builder
+FROM public.ecr.aws/docker/library/node:20-slim AS builder
 WORKDIR /app
 
 COPY package*.json ./
@@ -27,7 +32,7 @@ RUN npx esbuild src/server.ts \
       --packages=external \
       --outfile=dist/server.js
 
-FROM node:20-slim AS runtime
+FROM public.ecr.aws/docker/library/node:20-slim AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
 
