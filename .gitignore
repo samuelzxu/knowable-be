@@ -1,6 +1,7 @@
 dist/
 scripts/finetune/dataset
 scripts/finetune/raw
+scripts/finetune/model
 node_modules/
 .env
 .env.*

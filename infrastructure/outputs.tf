@@ -112,6 +112,50 @@ output "reason_stream_url" {
   description = "Lambda Function URL for streaming /reason-stream endpoint."
 }
 
+# ---- ECS API (api.knowable.ca) ----
+
+output "api_acm_validation_records" {
+  description = "DNS records to add to Cloudflare to validate the api.knowable.ca ACM cert. DNS-only (grey cloud), NOT proxied."
+  value = [
+    for dvo in aws_acm_certificate.api.domain_validation_options : {
+      domain_name           = dvo.domain_name
+      resource_record_name  = dvo.resource_record_name
+      resource_record_type  = dvo.resource_record_type
+      resource_record_value = dvo.resource_record_value
+    }
+  ]
+}
+
+output "api_ecr_repo_url" {
+  description = "ECR repository URL for the knowable-api Docker image. Tag images as :sha-<commit> + :latest."
+  value       = aws_ecr_repository.api.repository_url
+}
+
+output "api_codebuild_project_name" {
+  description = "CodeBuild project name. Trigger a build with `aws codebuild start-build --project-name <this>`."
+  value       = aws_codebuild_project.api.name
+}
+
+output "api_alb_dns_name" {
+  description = "ALB DNS name. Add a CNAME at Cloudflare: api.knowable.ca → <this value>. DNS-only (grey cloud), NOT proxied."
+  value       = aws_lb.api.dns_name
+}
+
+output "api_alb_zone_id" {
+  description = "ALB hosted zone ID (Route53 ALIAS users only — Cloudflare uses CNAME instead)."
+  value       = aws_lb.api.zone_id
+}
+
+output "api_ecs_cluster_name" {
+  description = "ECS cluster name. Matches the CodeBuild ECS_CLUSTER_NAME env var."
+  value       = aws_ecs_cluster.api.name
+}
+
+output "api_ecs_service_name" {
+  description = "ECS service name. Use with `aws ecs update-service --force-new-deployment` for manual rollouts."
+  value       = aws_ecs_service.api.name
+}
+
 # DNS records for SES domain verification + DKIM. Add these to Cloudflare
 # (DNS-only, NOT proxied — orange cloud OFF). Verification typically completes
 # within ~10 minutes once the records are live.

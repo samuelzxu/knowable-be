@@ -202,3 +202,75 @@ resource "aws_iam_role_policy_attachment" "bedrock_invoke" {
   role       = aws_iam_role.lambda_exec.name
   policy_arn = aws_iam_policy.bedrock_invoke.arn
 }
+
+# ---------------------------------------------------------------------
+# ECS task IAM (knowable-api Fargate service)
+# ---------------------------------------------------------------------
+# Two roles per ECS convention:
+#   - ecs_task_execution: the ECS agent's identity. Pulls images from
+#     ECR, writes CloudWatch Logs, and can read secrets from Secrets
+#     Manager for env-var-from-secret injection.
+#   - ecs_task: the running container's identity. Mirrors `lambda_exec`
+#     permissions for the migrated endpoints — Bedrock + DynamoDB +
+#     Secrets Manager + S3 finetune-traces put — because the Fastify
+#     container is doing the same work as the Lambdas it replaces.
+#
+# We deliberately reuse the existing `dynamodb_rw` and `secretsmanager_read`
+# policy documents and the `bedrock_invoke` + `finetune_traces_put`
+# managed policies so the two paths can't drift apart silently.
+# ---------------------------------------------------------------------
+
+data "aws_iam_policy_document" "ecs_tasks_assume" {
+  statement {
+    effect  = "Allow"
+    actions = ["sts:AssumeRole"]
+    principals {
+      type        = "Service"
+      identifiers = ["ecs-tasks.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role" "ecs_task_execution" {
+  name               = "knowable-api-ecs-execution"
+  assume_role_policy = data.aws_iam_policy_document.ecs_tasks_assume.json
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_task_execution_managed" {
+  role       = aws_iam_role.ecs_task_execution.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
+
+resource "aws_iam_role" "ecs_task" {
+  name               = "knowable-api-ecs-task"
+  assume_role_policy = data.aws_iam_policy_document.ecs_tasks_assume.json
+}
+
+resource "aws_iam_role_policy" "ecs_task_dynamodb_rw" {
+  name   = "knowable-api-dynamodb-rw"
+  role   = aws_iam_role.ecs_task.id
+  policy = data.aws_iam_policy_document.dynamodb_rw.json
+}
+
+resource "aws_iam_role_policy" "ecs_task_secretsmanager_read" {
+  name   = "knowable-api-secretsmanager-read"
+  role   = aws_iam_role.ecs_task.id
+  policy = data.aws_iam_policy_document.secretsmanager_read.json
+}
+
+# Bedrock invoke — reuse the same managed policy that AWS Budgets is
+# wired to detach on cost overrun. NOTE: the existing budget automation
+# only knows about the lambda_exec attachment; if the budget trips, the
+# ECS task role will keep its permission. Track tightening this as
+# post-Kaggle work alongside the per-Lambda IAM split.
+resource "aws_iam_role_policy_attachment" "ecs_task_bedrock" {
+  role       = aws_iam_role.ecs_task.name
+  policy_arn = aws_iam_policy.bedrock_invoke.arn
+}
+
+# S3 PutObject on knowable-finetune-traces — same grant the reason-stream
+# Lambda has today. Defined in finetune.tf.
+resource "aws_iam_role_policy_attachment" "ecs_task_finetune" {
+  role       = aws_iam_role.ecs_task.name
+  policy_arn = aws_iam_policy.finetune_traces_put.arn
+}

@@ -1,0 +1,33 @@
+# CodeBuild buildspec for knowable-api.
+#
+# Triggered by `aws codebuild start-build --project-name knowable-api-build`.
+# Builds the Fastify Docker image, tags it `:sha-<commit>` + `:latest`,
+# pushes to ECR, and forces an ECS rolling deploy so the new image is
+# pulled on the next task placement.
+#
+# Env vars (set by codebuild.tf):
+#   AWS_ACCOUNT_ID, AWS_REGION, ECR_REPO_URI,
+#   ECS_CLUSTER_NAME, ECS_SERVICE_NAME
+
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo "Logging in to Amazon ECR..."
+      - aws ecr get-login-password --region "$AWS_REGION" | docker login --username AWS --password-stdin "$ECR_REPO_URI"
+      - COMMIT_SHA=$(git rev-parse --short HEAD)
+      - echo "Building knowable-api image for commit $COMMIT_SHA"
+
+  build:
+    commands:
+      - docker build --tag "$ECR_REPO_URI:sha-$COMMIT_SHA" --tag "$ECR_REPO_URI:latest" -f docker/Dockerfile .
+
+  post_build:
+    commands:
+      - echo "Pushing images to ECR..."
+      - docker push "$ECR_REPO_URI:sha-$COMMIT_SHA"
+      - docker push "$ECR_REPO_URI:latest"
+      - echo "Forcing ECS rolling deploy..."
+      - aws ecs update-service --cluster "$ECS_CLUSTER_NAME" --service "$ECS_SERVICE_NAME" --force-new-deployment --region "$AWS_REGION"
+      - echo "Build complete - $ECR_REPO_URI:sha-$COMMIT_SHA"

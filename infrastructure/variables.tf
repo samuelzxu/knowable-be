@@ -35,9 +35,9 @@ variable "daily_hint_quota_global" {
 }
 
 variable "monthly_budget_usd" {
-  description = "Monthly Bedrock cost budget threshold in USD."
+  description = "Monthly Bedrock cost budget threshold in USD. AWS Budgets detaches the bedrock_invoke IAM policy when crossed."
   type        = number
-  default     = 50
+  default     = 500
 }
 
 variable "config_fetch_ttl_minutes" {
@@ -134,4 +134,44 @@ variable "callback_url_scheme" {
   description = "Custom URL scheme used for Cognito Hosted UI callbacks into the iOS app."
   type        = string
   default     = "knowable"
+}
+
+# ---- ECS API service (api.knowable.ca) ----
+# New ECS Fargate stack hosting the migrated reasoning/session endpoints.
+# Existing Lambda + Function URL surface stays in place until cutover.
+
+variable "api_domain_name" {
+  description = "Public hostname for the new ECS-fronted API (Fastify behind ALB)."
+  type        = string
+  default     = "api.knowable.ca"
+}
+
+variable "codebuild_source_url" {
+  description = "HTTPS URL of the knowable-be repository. CodeBuild clones this at build time; the repo must be public (no GitHub OAuth or CodeStar Connection)."
+  type        = string
+  default     = "https://github.com/samuelzxu/knowable-be.git"
+}
+
+variable "codebuild_source_branch" {
+  description = "Git branch CodeBuild builds from when triggered without an explicit --source-version."
+  type        = string
+  default     = "main"
+}
+
+variable "api_desired_count" {
+  description = "Number of Fargate tasks to run for the knowable-api service. Start at 0; bump to 1 once the first image is in ECR, then to 2 once verified across AZs."
+  type        = number
+  default     = 0
+}
+
+variable "api_task_cpu" {
+  description = "Fargate task CPU units. 512 = 0.5 vCPU. Bedrock streaming is I/O-bound so 0.5 is plenty until proven otherwise."
+  type        = number
+  default     = 512
+}
+
+variable "api_task_memory" {
+  description = "Fargate task memory in MiB."
+  type        = number
+  default     = 1024
 }
