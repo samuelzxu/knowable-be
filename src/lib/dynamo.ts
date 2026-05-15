@@ -192,7 +192,15 @@ export async function putHint(record: HintRecord): Promise<void> {
 
 export async function putGrade(record: GradeRecord): Promise<void> {
   const client = getDocumentClient();
-  await client.send(new PutCommand({ TableName: TABLE_GRADES, Item: record }));
+  // The knowable-grades table's range key is the composite
+  // `loggedAtSubject = "<loggedAt>#<subject>"` so multiple grades for
+  // the same subject can coexist. Synthesize it here so callers don't
+  // need to know about the composite-key shape.
+  const item = {
+    ...record,
+    loggedAtSubject: `${record.loggedAt}#${record.subject}`,
+  };
+  await client.send(new PutCommand({ TableName: TABLE_GRADES, Item: item }));
 }
 
 export async function listGrades(userId: string): Promise<GradeRecord[]> {
