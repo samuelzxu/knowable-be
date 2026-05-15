@@ -34,7 +34,7 @@ terraform apply -var-file=.env.tfvars -target=aws_lambda_function.reason_stream
 
 ---
 
-## Sonnet → Gemma 4 E4B distillation
+## LLM → Gemma 4 E4B distillation
 
 The reason-stream Lambda can capture (frames, request_context, sonnet_response)
 tuples to S3 when the client sets `capture: true` on its request. Those tuples
@@ -69,7 +69,7 @@ SSE-S3 encryption. Bucket name: `knowable-finetune-traces`.
 5. Each trace lives at:
    ```
    s3://knowable-finetune-traces/traces/YYYY-MM-DD/<uuid>/
-     ├── manifest.json           # full context + Sonnet response
+     ├── manifest.json           # full context + LLM response
      ├── frame-0.jpg             # frames as the model saw them
      └── frame-1.jpg
    ```
