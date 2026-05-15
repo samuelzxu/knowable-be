@@ -20,9 +20,10 @@ resource "aws_lb" "api" {
   # hints mid-stream. Matches the Kanu reference pattern.
   idle_timeout = 4000
 
-  # Hackathon-friendly — flip to true once the service is stable so a
-  # stray `terraform destroy` can't wipe it.
-  enable_deletion_protection = false
+  # Protects against `terraform destroy` mishaps and accidental console
+  # deletion. To intentionally remove, flip this back to false and apply
+  # before the destroy.
+  enable_deletion_protection = true
 }
 
 resource "aws_lb_target_group" "api" {

@@ -158,6 +158,12 @@ variable "codebuild_source_branch" {
   default     = "main"
 }
 
+variable "ops_email" {
+  description = "Operator email for CloudWatch alarms and AWS Budgets notifications."
+  type        = string
+  default     = "samuel@knowable.ca"
+}
+
 variable "api_desired_count" {
   description = "Number of Fargate tasks to run for the knowable-api service. Start at 0; bump to 1 once the first image is in ECR, then to 2 once verified across AZs."
   type        = number

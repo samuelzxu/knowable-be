@@ -1,13 +1,21 @@
 resource "aws_secretsmanager_secret" "turnstile" {
   name                    = "knowable/turnstile/secret"
   description             = "Cloudflare Turnstile secret key. Populate manually after creating a Turnstile site."
-  recovery_window_in_days = 0
+  # 7-day soft-delete window so a stray `terraform destroy` or an
+  # IAM rule that allows secretsmanager:DeleteSecret can't permanently
+  # destroy the Apple key / Google OAuth / Turnstile / ElevenLabs
+  # secrets. Recoverable via RestoreSecret within the window.
+  recovery_window_in_days = 7
 }
 
 resource "aws_secretsmanager_secret" "elevenlabs" {
   name                    = "knowable/elevenlabs/secret"
   description             = "ElevenLabs API key for TTS. Populate manually after creating an ElevenLabs account."
-  recovery_window_in_days = 0
+  # 7-day soft-delete window so a stray `terraform destroy` or an
+  # IAM rule that allows secretsmanager:DeleteSecret can't permanently
+  # destroy the Apple key / Google OAuth / Turnstile / ElevenLabs
+  # secrets. Recoverable via RestoreSecret within the window.
+  recovery_window_in_days = 7
 }
 
 # ---- Federated identity provider secrets (CRIT-1, audit 2026-05-04) ----
@@ -43,13 +51,21 @@ resource "aws_secretsmanager_secret" "elevenlabs" {
 resource "aws_secretsmanager_secret" "apple_signin" {
   name                    = "knowable/apple-signin"
   description             = "Apple Sign-In credentials (private_key, team_id, key_id, services_id) as a JSON object. Populated manually via AWS CLI after rotating in the Apple Developer Portal."
-  recovery_window_in_days = 0
+  # 7-day soft-delete window so a stray `terraform destroy` or an
+  # IAM rule that allows secretsmanager:DeleteSecret can't permanently
+  # destroy the Apple key / Google OAuth / Turnstile / ElevenLabs
+  # secrets. Recoverable via RestoreSecret within the window.
+  recovery_window_in_days = 7
 }
 
 resource "aws_secretsmanager_secret" "google_oauth" {
   name                    = "knowable/google-oauth"
   description             = "Google OAuth 2.0 client credentials (client_id, client_secret) as a JSON object. Populated manually via AWS CLI after rotating in Google Cloud Console."
-  recovery_window_in_days = 0
+  # 7-day soft-delete window so a stray `terraform destroy` or an
+  # IAM rule that allows secretsmanager:DeleteSecret can't permanently
+  # destroy the Apple key / Google OAuth / Turnstile / ElevenLabs
+  # secrets. Recoverable via RestoreSecret within the window.
+  recovery_window_in_days = 7
 }
 
 # Intentionally no aws_secretsmanager_secret_version: the user populates the

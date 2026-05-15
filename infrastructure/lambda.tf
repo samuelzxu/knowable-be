@@ -240,6 +240,12 @@ resource "aws_lambda_function" "reason_stream" {
   handler          = "index.handler"
   memory_size      = 1024
   timeout          = 60
+  # Blunt rate limit: the Function URL has authorization_type=NONE and
+  # no WAF, so an attacker with a valid JWT (or one that gets past
+  # cold-start auth) could otherwise melt the Bedrock budget. The new
+  # ECS path is behind WAF v2 with 300 req/5min/IP; this is the
+  # equivalent backstop for the legacy path until Phase 5 cutover.
+  reserved_concurrent_executions = 10
 
   environment {
     variables = merge(local.lambda_common_env, {

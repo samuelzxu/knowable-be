@@ -10,6 +10,7 @@
 //
 
 import Fastify from 'fastify'
+import { registerReasonStreamRoute } from './routes/reason-stream.js'
 
 const PORT = Number(process.env.PORT ?? 3000)
 const HOST = '0.0.0.0'
@@ -23,6 +24,7 @@ const fastify = Fastify({
 })
 
 fastify.get('/health', async () => ({ ok: true }))
+registerReasonStreamRoute(fastify)
 
 const start = async () => {
   try {

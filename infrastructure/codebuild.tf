@@ -58,11 +58,14 @@ data "aws_iam_policy_document" "codebuild" {
 
   # Roll out the new image. buildspec's post_build runs:
   #   aws ecs update-service --force-new-deployment ...
-  # to make ECS re-pull the image. Scoped to the api service only.
+  # to make ECS re-pull the image. Tightly scoped to the knowable-api
+  # service so a compromised build can't force-deploy other ECS services.
   statement {
-    effect    = "Allow"
-    actions   = ["ecs:UpdateService", "ecs:DescribeServices"]
-    resources = ["*"]
+    effect  = "Allow"
+    actions = ["ecs:UpdateService", "ecs:DescribeServices"]
+    resources = [
+      "arn:aws:ecs:${var.region}:${data.aws_caller_identity.current.account_id}:service/knowable-api/knowable-api",
+    ]
   }
 }
 

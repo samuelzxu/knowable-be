@@ -36,7 +36,13 @@ data "aws_iam_policy_document" "budgets_action" {
       "iam:AttachRolePolicy",
       "iam:ListAttachedRolePolicies",
     ]
-    resources = [aws_iam_role.lambda_exec.arn]
+    resources = [
+      aws_iam_role.lambda_exec.arn,
+      # ECS task role also carries `bedrock_invoke` — both must be
+      # detached when the monthly budget trips, otherwise the Fastify
+      # service keeps spending Bedrock past the cap.
+      aws_iam_role.ecs_task.arn,
+    ]
   }
 }
 
@@ -57,6 +63,18 @@ resource "aws_budgets_budget" "bedrock_monthly" {
     name   = "Service"
     values = ["Amazon Bedrock"]
   }
+
+  # Early-warning email at 80% of the monthly cap — gives a window to
+  # investigate before the 100% action detaches the bedrock_invoke
+  # policy and reasoning goes dark. AWS Budgets sends the notification
+  # directly (no SNS topic required).
+  notification {
+    comparison_operator        = "GREATER_THAN"
+    threshold                  = 80
+    threshold_type             = "PERCENTAGE"
+    notification_type          = "ACTUAL"
+    subscriber_email_addresses = [var.ops_email]
+  }
 }
 
 resource "aws_budgets_budget_action" "detach_bedrock_policy" {
@@ -75,12 +93,18 @@ resource "aws_budgets_budget_action" "detach_bedrock_policy" {
   definition {
     iam_action_definition {
       policy_arn = aws_iam_policy.bedrock_invoke.arn
-      roles      = [aws_iam_role.lambda_exec.name]
+      # Detach from both surfaces — legacy Lambda execution role and
+      # the new ECS task role. Without this, Bedrock would keep being
+      # called from Fastify after the cap is hit.
+      roles = [
+        aws_iam_role.lambda_exec.name,
+        aws_iam_role.ecs_task.name,
+      ]
     }
   }
 
   subscriber {
-    address           = "ops@knowable.ca"
+    address           = var.ops_email
     subscription_type = "EMAIL"
   }
 }
