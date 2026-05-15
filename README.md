@@ -32,6 +32,23 @@ Single-Lambda deploys (after `npm run build:lambdas`):
 terraform apply -var-file=.env.tfvars -target=aws_lambda_function.reason_stream
 ```
 
+```bash
+  cd infrastructure
+  terraform apply -var-file=.env.tfvars
+
+  # 4. First image push — either of these:
+  #    a) From CodeBuild:
+  aws codebuild start-build --project-name knowable-api-build
+  #    b) From local:
+  cd .. && ./scripts/build-and-push.sh
+  #    (SKIP_DEPLOY=1 ./scripts/build-and-push.sh if the service isn't up yet)
+
+  # 5. Bump task count and roll out
+  cd infrastructure
+  terraform apply -var-file=.env.tfvars
+
+```
+
 ---
 
 ## LLM → Gemma 4 E4B distillation
