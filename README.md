@@ -1,13 +1,13 @@
 # knowable-be
 
 Knowable's AWS backend (TypeScript Lambdas + Terraform) and the offline tooling
-for distilling LLM reasoning traces into Gemma 4 E4B.
+for distilling Sonnet 4.6 traces into Gemma 4 E4B.
 
 ```
 src/handlers/         Lambda entry points (reason-stream, share, classes, …)
 src/lib/              shared utilities (bedrock, dynamo, reason-schemas, trace-capture)
 infrastructure/       Terraform (Lambdas, DynamoDB, Cognito, S3 buckets)
-scripts/finetune/     LLM -> Gemma 4 E4B distillation tooling
+scripts/finetune/     Sonnet → Gemma 4 E4B distillation tooling
 ```
 
 ## Running locally
@@ -34,7 +34,7 @@ terraform apply -var-file=.env.tfvars -target=aws_lambda_function.reason_stream
 
 ---
 
-## LLM → Gemma 4 E4B distillation
+## Sonnet → Gemma 4 E4B distillation
 
 The reason-stream Lambda can capture (frames, request_context, sonnet_response)
 tuples to S3 when the client sets `capture: true` on its request. Those tuples
