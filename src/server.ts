@@ -1,16 +1,33 @@
 //
 // knowable-api Fastify server entry point.
 //
-// Currently /health only. SSE routes for /reason-stream and the rest of
-// the migrated endpoints will land in src/routes/* in Phase 3+.
-//
 // Runs in a Fargate task behind the knowable-api ALB. Listens on
 // PORT (env, default 3000) and binds 0.0.0.0 because the task has a
 // single ENI in the private subnet — the ALB connects by IP.
 //
+// All routes (except /health and /reason-stream which does its own
+// auth-in-stream) require a valid Cognito ID token via the global
+// preHandler below. Routes can assume `req.userId` is set.
+//
 
 import Fastify from 'fastify'
+import { extractBearerToken, verifyJwt } from './lib/auth.js'
 import { registerReasonStreamRoute } from './routes/reason-stream.js'
+import { registerHintRoute } from './routes/hint.js'
+import { registerTtsRoute } from './routes/tts.js'
+import { registerSessionsRoutes } from './routes/sessions.js'
+import { registerMessagesRoute } from './routes/messages.js'
+import { registerContextRoute } from './routes/context.js'
+import { registerGradesRoutes } from './routes/grades.js'
+import { registerTelemetryRoute } from './routes/telemetry.js'
+import { registerConfigRoute } from './routes/config.js'
+
+declare module 'fastify' {
+  interface FastifyRequest {
+    userId?: string
+    userEmail?: string
+  }
+}
 
 const PORT = Number(process.env.PORT ?? 3000)
 const HOST = '0.0.0.0'
@@ -23,8 +40,36 @@ const fastify = Fastify({
   // Defaults to JSON which CloudWatch ingests cleanly.
 })
 
+// Global auth preHandler. /health is public; /reason-stream verifies the
+// JWT itself before switching to SSE mode (it has to keep the unauthorized
+// response as plain JSON, not an SSE event).
+fastify.addHook('preHandler', async (req, reply) => {
+  const url = req.url.split('?')[0]
+  if (url === '/health' || url === '/reason-stream') return
+  const auth = typeof req.headers.authorization === 'string' ? req.headers.authorization : undefined
+  const token = extractBearerToken(auth)
+  if (!token) {
+    return reply.code(401).send({ error: 'unauthorized', message: 'Missing bearer token' })
+  }
+  try {
+    const claims = await verifyJwt(token)
+    req.userId = claims.sub
+    req.userEmail = claims.email
+  } catch {
+    return reply.code(401).send({ error: 'unauthorized', message: 'Invalid token' })
+  }
+})
+
 fastify.get('/health', async () => ({ ok: true }))
 registerReasonStreamRoute(fastify)
+registerHintRoute(fastify)
+registerTtsRoute(fastify)
+registerSessionsRoutes(fastify)
+registerMessagesRoute(fastify)
+registerContextRoute(fastify)
+registerGradesRoutes(fastify)
+registerTelemetryRoute(fastify)
+registerConfigRoute(fastify)
 
 const start = async () => {
   try {
