@@ -160,6 +160,12 @@ export interface StreamParser {
 export interface StreamParserCallbacks {
   /** Called when a section finishes (the next header arrived, or stream ended). */
   onSectionComplete: (section: ReasonSectionName, text: string) => void;
+  /** Optional: called with each new body fragment for the current
+   *  section. The fragment is the raw incremental text — concatenate
+   *  to get the running section text. Used by the SSE route to emit
+   *  token-level `hint_delta` events so the chat bubble can render
+   *  character-by-character. */
+  onSectionDelta?: (section: ReasonSectionName, deltaText: string) => void;
 }
 
 const HEADER_NAMES: ReasonSectionName[] = [
@@ -217,7 +223,9 @@ export function createStreamParser(cb: StreamParserCallbacks): StreamParser {
       // Before the first header - ignore (or the model emitted preamble).
       return;
     }
-    // Defer actual emit until section completes; we just accumulate.
+    // Fire the delta callback BEFORE accumulating so subscribers
+    // receive each fragment exactly once and in arrival order.
+    cb.onSectionDelta?.(currentSection, text);
     sectionBodies[currentSection] = (sectionBodies[currentSection] ?? "") + text;
   }
 

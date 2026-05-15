@@ -264,6 +264,16 @@ export function registerReasonStreamRoute(fastify: FastifyInstance): void {
         });
       });
 
+      // Fast-path: when the student is actively waiting on an answer
+      // (`force_reply=true` AND a non-empty `user_query`), skip the
+      // UNDERSTANDING + EVENTS sections entirely. Cuts time-to-first-
+      // hint-token from ~3-4s to ~1-1.5s because we no longer wait for
+      // the model to fill the thinking buffer. The next passive pass
+      // refreshes UNDERSTANDING; we accept slightly less-anchored hints
+      // in exchange for dramatically lower perceived latency.
+      const hasUserQuery = !!body.flags.user_query?.trim();
+      const useFastPath = isForceReply && hasUserQuery;
+
       if (!hasFrames) {
         contentBlocks.push({
           type: "text",
@@ -271,7 +281,12 @@ export function registerReasonStreamRoute(fastify: FastifyInstance): void {
             "No image is available on this pass. Answer the student's user_query from prior UNDERSTANDING + event_log. " +
             "Do NOT mention anything about frames, camera availability, or repositioning - the student does not know frames are a concept. " +
             "If you genuinely cannot answer without seeing the page, give your best inference from prior notes and invite them to show you. " +
-            "Produce UNDERSTANDING (keep or lightly update prior), EVENTS, HINT, HINT_SPEECH, STATE in that exact order. force_reply=true on this pass, so HINT and HINT_SPEECH must be non-empty.",
+            "FAST_REPLY MODE: Produce ONLY HINT, HINT_SPEECH, STATE in that exact order. Skip UNDERSTANDING and EVENTS — the passive loop will refresh them. The student is waiting. HINT and HINT_SPEECH must be non-empty.",
+        });
+      } else if (useFastPath) {
+        contentBlocks.push({
+          type: "text",
+          text: "FAST_REPLY MODE: Produce ONLY HINT, HINT_SPEECH, STATE in that exact order. Skip UNDERSTANDING and EVENTS — the passive loop will refresh them. The student is waiting. HINT and HINT_SPEECH must be non-empty.",
         });
       } else if (isForceReply) {
         contentBlocks.push({
@@ -314,6 +329,16 @@ export function registerReasonStreamRoute(fastify: FastifyInstance): void {
       let ttsPromise: Promise<void> | null = null;
 
       const parser = createStreamParser({
+        // Emit token-level deltas for the HINT section only. UNDERSTANDING
+        // and EVENTS are internal/log-only; HINT_SPEECH waits for the
+        // full text (TTS needs it whole); STATE is too small to bother.
+        // HINT is what the user sees in the chat bubble, so streaming
+        // it character-by-character is the visible win.
+        onSectionDelta: (section, deltaText) => {
+          if (section === "HINT" && deltaText.length > 0) {
+            sseEvent(guardedStream, "hint_delta", { text: deltaText });
+          }
+        },
         onSectionComplete: (section, text) => {
           switch (section) {
             case "UNDERSTANDING":
@@ -376,10 +401,15 @@ export function registerReasonStreamRoute(fastify: FastifyInstance): void {
 
       // ---- Persistence (best-effort) ----
       if (body.session_id) {
-        try {
-          await updateSessionAnalysis(userId, body.session_id, understanding);
-        } catch (err) {
-          req.log.warn({ err }, "[reason-stream] failed to persist understanding");
+        // Don't overwrite the existing analysis with an empty string —
+        // happens on FAST_REPLY passes that skip UNDERSTANDING. The
+        // next passive pass refreshes the field.
+        if (understanding) {
+          try {
+            await updateSessionAnalysis(userId, body.session_id, understanding);
+          } catch (err) {
+            req.log.warn({ err }, "[reason-stream] failed to persist understanding");
+          }
         }
         if (hintText) {
           const messageId = randomUUID();
