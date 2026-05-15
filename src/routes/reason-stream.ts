@@ -329,13 +329,16 @@ export function registerReasonStreamRoute(fastify: FastifyInstance): void {
       let ttsPromise: Promise<void> | null = null;
 
       const parser = createStreamParser({
-        // Emit token-level deltas for the HINT section only. UNDERSTANDING
-        // and EVENTS are internal/log-only; HINT_SPEECH waits for the
-        // full text (TTS needs it whole); STATE is too small to bother.
-        // HINT is what the user sees in the chat bubble, so streaming
-        // it character-by-character is the visible win.
+        // Emit token-level deltas for the HINT section only, AND only
+        // when `force_reply` is true — passive passes have an empty
+        // HINT section (just a "\n" between the `HINT:` header and the
+        // `HINT_SPEECH:` header), and we'd otherwise emit a hint_delta
+        // for that newline. The client would accumulate the whitespace
+        // into a streaming bubble and never clear it (since the schema
+        // rejects empty hint_complete events, `onHint` never fires on
+        // passive passes — leaving a phantom blank bubble in the chat).
         onSectionDelta: (section, deltaText) => {
-          if (section === "HINT" && deltaText.length > 0) {
+          if (section === "HINT" && deltaText.length > 0 && isForceReply) {
             sseEvent(guardedStream, "hint_delta", { text: deltaText });
           }
         },
