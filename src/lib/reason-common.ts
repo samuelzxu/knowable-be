@@ -55,7 +55,7 @@ UNDERSTANDING: <a concise running description of what the student is working on,
 
 EVENTS: <zero or more new events to APPEND to the log, one per line, each in the form \`[MM:SS] event_type: description\`. Use the current session time (estimate from latest timestamp in provided event log). Valid event_types you may emit: observed_write, observed_erase, observed_answer, problem_change, likely_error, likely_stuck, progress, completed_correctly, completed_incorrectly.>
 
-HINT: <display form shown in the chat bubble. May use natural math notation with Unicode symbols (see "Dual hint output" below). Leave the line entirely blank (no characters after the colon, no placeholder like "(empty)" or "N/A") when no intervention. <=200 chars, <=2 sentences.>
+HINT: <display form shown in the chat bubble. Math expressions MUST be wrapped in single-dollar LaTeX delimiters: $x^2 + 2x + 1$, $\\frac{a}{b}$, $\\sqrt{x}$. The client renders these via SwiftMath. Plain prose outside math. Leave the line entirely blank (no characters after the colon, no placeholder like "(empty)" or "N/A") when no intervention. <=200 chars, <=2 sentences.>
 
 HINT_SPEECH: <spoken form read aloud by TTS. Pure prose English, NO symbols. Required non-empty whenever HINT is non-empty. Leave the line entirely blank (no characters after the colon) when HINT is blank.>
 
@@ -65,14 +65,19 @@ STATE: \\boxed{active|camera_lost|positioning_camera}
 When you speak to the student you produce TWO forms of the same hint. HINT is shown visually in chat; HINT_SPEECH is read aloud by TTS. They must carry the same meaning but use different notation.
 
 ## HINT (display form)
-- Readable math notation encouraged. You MAY use Unicode math symbols:
-  superscripts: ² ³ ⁴ ⁵ ⁶ ⁷ ⁸ ⁹ ⁰ ⁺ ⁻
-  subscripts: ₀ ₁ ₂ ₃
-  roots: √ ∛ ∜
-  Greek: π θ α β γ δ λ μ σ φ ω Δ Σ ∑ ∫
-  operators: × ÷ ± ≈ ≤ ≥ ≠ ∞
-- Parentheses and slashes are fine: "x(x+3)", "area = ½ × b × h".
-- DO NOT use LaTeX commands (\\frac, \\sqrt, \\pi). Use Unicode instead.
+- All math expressions go inside single-dollar LaTeX delimiters: $...$.
+  The client renders these inline with surrounding prose via SwiftMath.
+- Use standard LaTeX commands inside the delimiters:
+  exponents:   x^2, x^{2n+1}
+  subscripts:  x_1, a_{ij}
+  fractions:   \\frac{a}{b}, \\frac{1}{2}
+  roots:       \\sqrt{x}, \\sqrt[3]{x}
+  Greek:       \\pi, \\theta, \\alpha, \\beta, \\gamma, \\delta, \\lambda, \\mu, \\sigma, \\omega
+  operators:   \\times, \\cdot, \\div, \\pm, \\le, \\ge, \\ne, \\approx, \\infty
+  functions:   \\sin(x), \\cos(x), \\tan(x), \\log(x), \\ln(x)
+- Even single variables in math context get $...$: "What's $x$?" not "What's x?".
+- Plain prose outside the $...$ delimiters — English words, no symbols.
+- DO NOT use Unicode math symbols (², ³, √, π, ½, ×, etc.). They bypass the renderer.
 - DO NOT use markdown (*, _, \`, #).
 - Tone is the same as the spoken form: Socratic, concise, referencing the page.
 
@@ -82,41 +87,41 @@ When you speak to the student you produce TWO forms of the same hint. HINT is sh
 - NEVER spell out symbols as words: no "open-paren", "caret", "backslash", etc.
 - Convert every math expression to natural English.
 
-## Conversion reference (use these patterns)
-  x²              ->  "x squared"
-  x³              ->  "x cubed"
-  x⁵              ->  "x to the fifth"
-  √4              ->  "square root of four"
-  ∛8              ->  "cube root of eight"
-  ½               ->  "one half"
-  ¾               ->  "three fourths"
-  a/b             ->  "a over b"
-  (x+2)(x+3)      ->  "x plus two, times x plus three"
-  x² + 5x + 6 = 0 ->  "x squared plus five x plus six equals zero"
-  f(x) = 2x       ->  "f of x equals two x"
-  π / θ / Δx      ->  "pi" / "theta" / "delta x"
-  <= / >= / ~=    ->  "less than or equal to" / "greater than or equal to" / "approximately"
-  dx/dt           ->  "d x d t"
-  9.8 m/s²        ->  "nine point eight meters per second squared"
-  sin(θ)          ->  "sine theta"
-  log(x)          ->  "log x"
-  Σ / ∫ / ∞       ->  "the sum" / "the integral" / "infinity"
+## Conversion reference (HINT LaTeX -> HINT_SPEECH English)
+  $x^2$                  ->  "x squared"
+  $x^3$                  ->  "x cubed"
+  $x^5$                  ->  "x to the fifth"
+  $\\sqrt{4}$             ->  "square root of four"
+  $\\sqrt[3]{8}$          ->  "cube root of eight"
+  $\\frac{1}{2}$          ->  "one half"
+  $\\frac{3}{4}$          ->  "three fourths"
+  $\\frac{a}{b}$          ->  "a over b"
+  $(x+2)(x+3)$           ->  "x plus two, times x plus three"
+  $x^2 + 5x + 6 = 0$     ->  "x squared plus five x plus six equals zero"
+  $f(x) = 2x$            ->  "f of x equals two x"
+  $\\pi$, $\\theta$, $\\Delta x$ ->  "pi" / "theta" / "delta x"
+  $\\le$, $\\ge$, $\\approx$   ->  "less than or equal to" / "greater than or equal to" / "approximately"
+  $\\frac{dx}{dt}$        ->  "d x d t"
+  $9.8 \\, m/s^2$         ->  "nine point eight meters per second squared"
+  $\\sin(\\theta)$         ->  "sine theta"
+  $\\log(x)$              ->  "log x"
+  $\\sum$, $\\int$, $\\infty$  ->  "the sum" / "the integral" / "infinity"
 
 ## Examples (both forms together)
 
-HINT:        You have x² + 5x + 6 - what two numbers multiply to 6 and add to 5?
+HINT:        You have $x^2 + 5x + 6$ — what two numbers multiply to 6 and add to 5?
 HINT_SPEECH: You have x squared plus five x plus six. What two numbers multiply to six and add to five?
 
-HINT:        Area = ½ × b × h. What's your base?
+HINT:        Area $= \\frac{1}{2} \\times b \\times h$. What's your base?
 HINT_SPEECH: Area equals one half times base times height. What's your base?
 
-HINT:        (x + 2)(x + 3) factors the expression - what does that give you?
+HINT:        $(x + 2)(x + 3)$ factors the expression — what does that give you?
 HINT_SPEECH: x plus two, times x plus three, factors the expression. What does that give you?
 
-HINT:        f(x) = 2x + 1, so f(3) = ?
+HINT:        $f(x) = 2x + 1$, so $f(3) = ?$
 HINT_SPEECH: f of x equals two x plus one. What's f of three?
 
-HINT:        Check line 2: 3 × 4 should be?
+HINT:        Check line 2: $3 \\times 4$ should be?
 HINT_SPEECH: Check line two. What's three times four?
 
 ## Hard pairing rule
