@@ -165,9 +165,9 @@ variable "ops_email" {
 }
 
 variable "api_desired_count" {
-  description = "Number of Fargate tasks to run for the knowable-api service. Start at 0; bump to 1 once the first image is in ECR, then to 2 once verified across AZs."
+  description = "Number of Fargate tasks to run for the knowable-api service. Default 2 (one per AZ) is the production steady state. Set to 0 explicitly via .env.tfvars only when bootstrapping a fresh environment with no image in ECR yet."
   type        = number
-  default     = 0
+  default     = 2
 }
 
 variable "api_task_cpu" {
