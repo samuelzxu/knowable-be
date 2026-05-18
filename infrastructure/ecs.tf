@@ -30,29 +30,35 @@ resource "aws_ecs_cluster_capacity_providers" "api" {
   }
 }
 
-# Container env. Mirrors the Lambda handler's view of the world so the
-# ported routes don't have to relearn variable names. Reuses
-# `local.lambda_common_env` (defined in lambda.tf) so the two paths
-# can't drift on COGNITO_*, TURNSTILE_*, etc.
+# Container env. Inlines what used to be `local.lambda_common_env`
+# (deleted alongside lambda.tf in the Lambda decommission) plus the
+# table/secret env the Fastify service needs beyond the common set.
 locals {
-  api_task_env = merge(local.lambda_common_env, {
-    PORT                        = "3000"
-    REASON_MODEL_ID_PASSIVE     = "us.anthropic.claude-sonnet-4-6"
-    REASON_MODEL_ID_ACTIVE      = "us.anthropic.claude-sonnet-4-6"
-    ELEVENLABS_SECRET_NAME      = aws_secretsmanager_secret.elevenlabs.name
-    ELEVENLABS_DEFAULT_VOICE_ID = var.elevenlabs_default_voice_id
-    DYNAMODB_TABLE_SESSIONS     = aws_dynamodb_table.sessions.name
-    DYNAMODB_TABLE_MESSAGES     = aws_dynamodb_table.messages.name
-    DYNAMODB_TABLE_TELEMETRY    = aws_dynamodb_table.telemetry.name
-    DYNAMODB_TABLE_HINTS        = aws_dynamodb_table.hints.name
-    DYNAMODB_TABLE_PROBLEMS     = aws_dynamodb_table.problems.name
-    DYNAMODB_TABLE_GRADES       = aws_dynamodb_table.grades.name
-    DYNAMODB_TABLE_QUOTA        = aws_dynamodb_table.quota.name
-    DYNAMODB_TABLE_CONFIG       = aws_dynamodb_table.config.name
-    DAILY_HINT_QUOTA_PER_USER   = tostring(var.daily_hint_quota_per_user)
-    DAILY_HINT_QUOTA_GLOBAL     = tostring(var.daily_hint_quota_global)
-    FINETUNE_TRACE_BUCKET       = aws_s3_bucket.finetune_traces.id
-  })
+  api_task_env = {
+    AWS_NODEJS_CONNECTION_REUSE_ENABLED = "1"
+    REGION                              = var.region
+    BEDROCK_MODEL_ID                    = var.bedrock_model_id
+    CONFIG_FETCH_TTL_MINUTES            = tostring(var.config_fetch_ttl_minutes)
+    TURNSTILE_SECRET_NAME               = aws_secretsmanager_secret.turnstile.name
+    COGNITO_USER_POOL_ID                = aws_cognito_user_pool.main.id
+    COGNITO_CLIENT_ID                   = aws_cognito_user_pool_client.main.id
+    PORT                                = "3000"
+    REASON_MODEL_ID_PASSIVE             = "us.anthropic.claude-sonnet-4-6"
+    REASON_MODEL_ID_ACTIVE              = "us.anthropic.claude-sonnet-4-6"
+    ELEVENLABS_SECRET_NAME              = aws_secretsmanager_secret.elevenlabs.name
+    ELEVENLABS_DEFAULT_VOICE_ID         = var.elevenlabs_default_voice_id
+    DYNAMODB_TABLE_SESSIONS             = aws_dynamodb_table.sessions.name
+    DYNAMODB_TABLE_MESSAGES             = aws_dynamodb_table.messages.name
+    DYNAMODB_TABLE_TELEMETRY            = aws_dynamodb_table.telemetry.name
+    DYNAMODB_TABLE_HINTS                = aws_dynamodb_table.hints.name
+    DYNAMODB_TABLE_PROBLEMS             = aws_dynamodb_table.problems.name
+    DYNAMODB_TABLE_GRADES               = aws_dynamodb_table.grades.name
+    DYNAMODB_TABLE_QUOTA                = aws_dynamodb_table.quota.name
+    DYNAMODB_TABLE_CONFIG               = aws_dynamodb_table.config.name
+    DAILY_HINT_QUOTA_PER_USER           = tostring(var.daily_hint_quota_per_user)
+    DAILY_HINT_QUOTA_GLOBAL             = tostring(var.daily_hint_quota_global)
+    FINETUNE_TRACE_BUCKET               = aws_s3_bucket.finetune_traces.id
+  }
 }
 
 resource "aws_ecs_task_definition" "api" {

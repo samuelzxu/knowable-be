@@ -55,7 +55,9 @@ resource "aws_s3_bucket_lifecycle_configuration" "finetune_traces" {
   }
 }
 
-# Allow the /reason-stream Lambda role to write capture objects.
+# Allow the ECS task role to write capture objects. The role attachment
+# itself lives in iam.tf (aws_iam_role_policy_attachment.ecs_task_finetune)
+# so the ECS role wiring is colocated with the rest of the task IAM.
 data "aws_iam_policy_document" "finetune_traces_put" {
   statement {
     actions   = ["s3:PutObject"]
@@ -64,14 +66,13 @@ data "aws_iam_policy_document" "finetune_traces_put" {
 }
 
 resource "aws_iam_policy" "finetune_traces_put" {
-  name        = "knowable-finetune-traces-put"
+  name = "knowable-finetune-traces-put"
+  # NOTE: do not edit `description` — AWS treats it as immutable and a
+  # change forces a policy replacement, which briefly detaches the ECS
+  # task role from S3 PutObject. The original text mentions the
+  # reason-stream Lambda which has been decommissioned.
   description = "Allows the reason-stream Lambda to write fine-tune trace objects."
   policy      = data.aws_iam_policy_document.finetune_traces_put.json
-}
-
-resource "aws_iam_role_policy_attachment" "finetune_traces_put" {
-  role       = aws_iam_role.lambda_exec.name
-  policy_arn = aws_iam_policy.finetune_traces_put.arn
 }
 
 output "finetune_trace_bucket" {

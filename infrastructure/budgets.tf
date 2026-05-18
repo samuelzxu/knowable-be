@@ -2,12 +2,12 @@
 #
 # When monthly Bedrock spend crosses `var.monthly_budget_usd`, the budget
 # action detaches the `knowable-bedrock-invoke` managed policy from the
-# Lambda execution role, making all subsequent Bedrock calls fail with
+# ECS task role, making all subsequent Bedrock calls fail with
 # AccessDeniedException.
 #
 # IMPORTANT: Budgets actions can lag 8–12 hours after the threshold is
 # crossed. The authoritative fast-path circuit breaker is the 500/day
-# GLOBAL quota ceiling enforced in `src/handlers/hint.ts` — that returns
+# GLOBAL quota ceiling enforced in the Fastify API — that returns
 # 429 immediately. Budgets is the slow belt-and-suspenders mechanism.
 #
 # Re-attach after a budget detach is a MANUAL runbook step (see README).
@@ -37,10 +37,9 @@ data "aws_iam_policy_document" "budgets_action" {
       "iam:ListAttachedRolePolicies",
     ]
     resources = [
-      aws_iam_role.lambda_exec.arn,
-      # ECS task role also carries `bedrock_invoke` — both must be
-      # detached when the monthly budget trips, otherwise the Fastify
-      # service keeps spending Bedrock past the cap.
+      # ECS task role carries `bedrock_invoke` — must be detached when
+      # the monthly budget trips, otherwise the Fastify service keeps
+      # spending Bedrock past the cap.
       aws_iam_role.ecs_task.arn,
     ]
   }
@@ -93,11 +92,9 @@ resource "aws_budgets_budget_action" "detach_bedrock_policy" {
   definition {
     iam_action_definition {
       policy_arn = aws_iam_policy.bedrock_invoke.arn
-      # Detach from both surfaces — legacy Lambda execution role and
-      # the new ECS task role. Without this, Bedrock would keep being
-      # called from Fastify after the cap is hit.
+      # Detach from the ECS task role. Without this, Bedrock would keep
+      # being called from Fastify after the cap is hit.
       roles = [
-        aws_iam_role.lambda_exec.name,
         aws_iam_role.ecs_task.name,
       ]
     }

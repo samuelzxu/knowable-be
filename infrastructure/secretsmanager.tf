@@ -1,6 +1,6 @@
 resource "aws_secretsmanager_secret" "turnstile" {
-  name                    = "knowable/turnstile/secret"
-  description             = "Cloudflare Turnstile secret key. Populate manually after creating a Turnstile site."
+  name        = "knowable/turnstile/secret"
+  description = "Cloudflare Turnstile secret key. Populate manually after creating a Turnstile site."
   # 7-day soft-delete window so a stray `terraform destroy` or an
   # IAM rule that allows secretsmanager:DeleteSecret can't permanently
   # destroy the Apple key / Google OAuth / Turnstile / ElevenLabs
@@ -9,8 +9,8 @@ resource "aws_secretsmanager_secret" "turnstile" {
 }
 
 resource "aws_secretsmanager_secret" "elevenlabs" {
-  name                    = "knowable/elevenlabs/secret"
-  description             = "ElevenLabs API key for TTS. Populate manually after creating an ElevenLabs account."
+  name        = "knowable/elevenlabs/secret"
+  description = "ElevenLabs API key for TTS. Populate manually after creating an ElevenLabs account."
   # 7-day soft-delete window so a stray `terraform destroy` or an
   # IAM rule that allows secretsmanager:DeleteSecret can't permanently
   # destroy the Apple key / Google OAuth / Turnstile / ElevenLabs
@@ -49,8 +49,8 @@ resource "aws_secretsmanager_secret" "elevenlabs" {
 #     --secret-string '{"client_id":"...","client_secret":"..."}'
 
 resource "aws_secretsmanager_secret" "apple_signin" {
-  name                    = "knowable/apple-signin"
-  description             = "Apple Sign-In credentials (private_key, team_id, key_id, services_id) as a JSON object. Populated manually via AWS CLI after rotating in the Apple Developer Portal."
+  name        = "knowable/apple-signin"
+  description = "Apple Sign-In credentials (private_key, team_id, key_id, services_id) as a JSON object. Populated manually via AWS CLI after rotating in the Apple Developer Portal."
   # 7-day soft-delete window so a stray `terraform destroy` or an
   # IAM rule that allows secretsmanager:DeleteSecret can't permanently
   # destroy the Apple key / Google OAuth / Turnstile / ElevenLabs
@@ -59,8 +59,8 @@ resource "aws_secretsmanager_secret" "apple_signin" {
 }
 
 resource "aws_secretsmanager_secret" "google_oauth" {
-  name                    = "knowable/google-oauth"
-  description             = "Google OAuth 2.0 client credentials (client_id, client_secret) as a JSON object. Populated manually via AWS CLI after rotating in Google Cloud Console."
+  name        = "knowable/google-oauth"
+  description = "Google OAuth 2.0 client credentials (client_id, client_secret) as a JSON object. Populated manually via AWS CLI after rotating in Google Cloud Console."
   # 7-day soft-delete window so a stray `terraform destroy` or an
   # IAM rule that allows secretsmanager:DeleteSecret can't permanently
   # destroy the Apple key / Google OAuth / Turnstile / ElevenLabs

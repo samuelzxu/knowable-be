@@ -7,7 +7,6 @@
 #
 # Skipped alarms (and why):
 #  - ECS task restart count   → duplicates UnHealthyHostCount
-#  - Lambda Duration p99       → Bedrock latency is naturally bursty
 #  - ALB 4xx rate              → noisy (expired tokens, dev builds)
 
 resource "aws_sns_topic" "alarms" {
@@ -165,29 +164,7 @@ resource "aws_cloudwatch_metric_alarm" "ddb_throttled" {
   }
 }
 
-# ---- 7. Legacy Lambda reason-stream errors -------------------------
-# Until Phase 5 cutover, the Lambda path is still primary for any
-# client running with `milo_reasoning_endpoint = "lambda"` (the default).
-# Delete this alarm in Phase 5 alongside the Lambda itself.
-resource "aws_cloudwatch_metric_alarm" "lambda_reason_stream_errors" {
-  alarm_name          = "knowable-lambda-reason-stream-errors"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 1
-  metric_name         = "Errors"
-  namespace           = "AWS/Lambda"
-  period              = 300
-  statistic           = "Sum"
-  threshold           = 5
-  alarm_description   = "Legacy /reason-stream Lambda errors >= 5 in 5 min."
-  treat_missing_data  = "notBreaching"
-  alarm_actions       = [aws_sns_topic.alarms.arn]
-
-  dimensions = {
-    FunctionName = aws_lambda_function.reason_stream.function_name
-  }
-}
-
-# ---- 8. Budget 80% early warning -----------------------------------
+# ---- 7. Budget 80% early warning -----------------------------------
 # Lives directly on the `aws_budgets_budget.bedrock_monthly` resource
 # in budgets.tf (no CloudWatch alarm — AWS Budgets sends the email
 # directly without an SNS topic).

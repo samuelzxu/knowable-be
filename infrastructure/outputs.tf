@@ -13,18 +13,13 @@ output "user_pool_domain" {
   value       = "https://${aws_cognito_user_pool_domain.main.domain}.auth.${var.region}.amazoncognito.com"
 }
 
-output "http_api_url" {
-  description = "HTTP API base URL."
-  value       = aws_apigatewayv2_stage.default.invoke_url
-}
-
 output "region" {
   description = "Primary AWS region."
   value       = var.region
 }
 
 output "bedrock_model_id" {
-  description = "Bedrock model ID used by the hint Lambda."
+  description = "Bedrock model ID used by the Fastify API."
   value       = var.bedrock_model_id
 }
 
@@ -105,11 +100,6 @@ output "platform_acm_validation_records" {
 output "platform_cname_target" {
   description = "Value to set as the platform.knowable.ca CNAME target in Cloudflare (DNS-only)."
   value       = aws_cloudfront_distribution.platform.domain_name
-}
-
-output "reason_stream_url" {
-  value       = aws_lambda_function_url.reason_stream.function_url
-  description = "Lambda Function URL for streaming /reason-stream endpoint."
 }
 
 # ---- ECS API (api.knowable.ca) ----
