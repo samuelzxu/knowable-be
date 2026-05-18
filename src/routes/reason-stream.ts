@@ -264,6 +264,26 @@ export function registerReasonStreamRoute(fastify: FastifyInstance): void {
         });
       });
 
+      // Optional second feed — the window the student is sharing via
+      // ScreenCaptureKit on their Mac. Same temporal ordering as the
+      // notebook frames (index 0 = oldest, last = "right now"). When
+      // absent, skipping these blocks keeps the prompt structure
+      // identical to the single-source case.
+      (body.screen_frames ?? []).forEach((frame, i) => {
+        contentBlocks.push({
+          type: "text",
+          text: `<screen_frame index="${i}">`,
+        });
+        contentBlocks.push({
+          type: "image",
+          source: {
+            type: "base64",
+            media_type: "image/jpeg",
+            data: frame,
+          },
+        });
+      });
+
       // Fast-path: when the student is actively waiting on an answer
       // (`force_reply=true` AND a non-empty `user_query`), skip the
       // UNDERSTANDING + EVENTS sections entirely. Cuts time-to-first-

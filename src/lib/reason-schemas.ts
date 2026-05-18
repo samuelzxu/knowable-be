@@ -16,6 +16,13 @@ export const ReasonFlagsSchema = z.object({
 
 export const ReasonRequestSchema = z.object({
   frames: z.array(z.string()).max(8),
+  // Optional second feed from the client's screen-share capture
+  // (ScreenCaptureKit / a single window). When non-empty, the LLM is
+  // told it's seeing two parallel views: notebook camera AND a window
+  // the student is sharing. Same temporal cadence as `frames` so the
+  // two streams pair up sample-for-sample. Capped at 8 to keep total
+  // image-attached input bounded.
+  screen_frames: z.array(z.string()).max(8).optional(),
   event_log: z.string().max(20000).default(""),
   current_analysis: z.string().max(2000).default(""),
   flags: ReasonFlagsSchema,
