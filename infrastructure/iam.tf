@@ -3,11 +3,7 @@ data "aws_caller_identity" "current" {}
 locals {
   dynamo_table_arns = [
     aws_dynamodb_table.sessions.arn,
-    aws_dynamodb_table.problems.arn,
-    aws_dynamodb_table.hints.arn,
-    aws_dynamodb_table.grades.arn,
     aws_dynamodb_table.quota.arn,
-    aws_dynamodb_table.telemetry.arn,
     aws_dynamodb_table.config.arn,
     aws_dynamodb_table.waitlist.arn,
     aws_dynamodb_table.messages.arn,

@@ -2,11 +2,7 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, PutCommand, GetCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
 
 const TABLE_SESSIONS = process.env["DYNAMODB_TABLE_SESSIONS"] ?? "knowable-sessions";
-const TABLE_PROBLEMS = process.env["DYNAMODB_TABLE_PROBLEMS"] ?? "knowable-problems";
-const TABLE_HINTS = process.env["DYNAMODB_TABLE_HINTS"] ?? "knowable-hints";
-const TABLE_GRADES = process.env["DYNAMODB_TABLE_GRADES"] ?? "knowable-grades";
 const TABLE_WAITLIST = process.env["DYNAMODB_TABLE_WAITLIST"] ?? "knowable-waitlist";
-const TABLE_TELEMETRY = process.env["DYNAMODB_TABLE_TELEMETRY"] ?? "knowable-telemetry";
 const TABLE_CONFIG = process.env["DYNAMODB_TABLE_CONFIG"] ?? "knowable-config";
 const TABLE_MESSAGES = process.env["DYNAMODB_TABLE_MESSAGES"] ?? "knowable-messages";
 
@@ -49,46 +45,11 @@ export interface SessionRecord {
   analysisUpdatedAt?: string;
 }
 
-export interface ProblemRecord {
-  sessionId: string;
-  problemId: string;
-  text: string;
-  startedAt: string;
-  endedAt?: string;
-  hintsCount?: number;
-}
-
-export interface HintRecord {
-  problemId: string;
-  hintId: string;
-  text: string;
-  deliveredAt: string;
-  source: string;
-  tokensIn?: number;
-  tokensOut?: number;
-}
-
-export interface GradeRecord {
-  userId: string;
-  gradeId: string;
-  subject: string;
-  score: number;
-  loggedAt: string;
-}
-
 export interface WaitlistRecord {
   email: string;
   createdAt: string;
   sourceIp?: string;
   userAgent?: string;
-}
-
-export interface TelemetryRecord {
-  userId: string;
-  ts: string;
-  eventType: string;
-  payload: Record<string, unknown>;
-  ttl?: number;
 }
 
 export interface MessageRecord {
@@ -180,42 +141,6 @@ export async function listSessions(userId: string): Promise<SessionRecord[]> {
   return (result.Items ?? []) as SessionRecord[];
 }
 
-export async function putProblem(record: ProblemRecord): Promise<void> {
-  const client = getDocumentClient();
-  await client.send(new PutCommand({ TableName: TABLE_PROBLEMS, Item: record }));
-}
-
-export async function putHint(record: HintRecord): Promise<void> {
-  const client = getDocumentClient();
-  await client.send(new PutCommand({ TableName: TABLE_HINTS, Item: record }));
-}
-
-export async function putGrade(record: GradeRecord): Promise<void> {
-  const client = getDocumentClient();
-  // The knowable-grades table's range key is the composite
-  // `loggedAtSubject = "<loggedAt>#<subject>"` so multiple grades for
-  // the same subject can coexist. Synthesize it here so callers don't
-  // need to know about the composite-key shape.
-  const item = {
-    ...record,
-    loggedAtSubject: `${record.loggedAt}#${record.subject}`,
-  };
-  await client.send(new PutCommand({ TableName: TABLE_GRADES, Item: item }));
-}
-
-export async function listGrades(userId: string): Promise<GradeRecord[]> {
-  const client = getDocumentClient();
-  const result = await client.send(
-    new QueryCommand({
-      TableName: TABLE_GRADES,
-      KeyConditionExpression: "userId = :uid",
-      ExpressionAttributeValues: { ":uid": userId },
-      ScanIndexForward: false,
-    })
-  );
-  return (result.Items ?? []) as GradeRecord[];
-}
-
 export async function putWaitlist(record: WaitlistRecord): Promise<void> {
   const client = getDocumentClient();
   await client.send(
@@ -225,11 +150,6 @@ export async function putWaitlist(record: WaitlistRecord): Promise<void> {
       ConditionExpression: "attribute_not_exists(email)",
     })
   );
-}
-
-export async function putTelemetryEvent(record: TelemetryRecord): Promise<void> {
-  const client = getDocumentClient();
-  await client.send(new PutCommand({ TableName: TABLE_TELEMETRY, Item: record }));
 }
 
 export async function putMessage(record: MessageRecord): Promise<void> {

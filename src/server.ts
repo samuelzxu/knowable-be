@@ -18,9 +18,8 @@ import { registerTtsRoute } from './routes/tts.js'
 import { registerSessionsRoutes } from './routes/sessions.js'
 import { registerMessagesRoute } from './routes/messages.js'
 import { registerContextRoute } from './routes/context.js'
-import { registerGradesRoutes } from './routes/grades.js'
-import { registerTelemetryRoute } from './routes/telemetry.js'
 import { registerConfigRoute } from './routes/config.js'
+import { registerWaitlistRoute } from './routes/waitlist.js'
 
 declare module 'fastify' {
   interface FastifyRequest {
@@ -42,10 +41,12 @@ const fastify = Fastify({
 
 // Global auth preHandler. /health is public; /reason-stream verifies the
 // JWT itself before switching to SSE mode (it has to keep the unauthorized
-// response as plain JSON, not an SSE event).
+// response as plain JSON, not an SSE event); /waitlist is the public
+// landing-page sign-up form, gated by Cloudflare Turnstile instead of a
+// Cognito session.
 fastify.addHook('preHandler', async (req, reply) => {
   const url = req.url.split('?')[0]
-  if (url === '/health' || url === '/reason-stream') return
+  if (url === '/health' || url === '/reason-stream' || url === '/waitlist') return
   const auth = typeof req.headers.authorization === 'string' ? req.headers.authorization : undefined
   const token = extractBearerToken(auth)
   if (!token) {
@@ -67,9 +68,8 @@ registerTtsRoute(fastify)
 registerSessionsRoutes(fastify)
 registerMessagesRoute(fastify)
 registerContextRoute(fastify)
-registerGradesRoutes(fastify)
-registerTelemetryRoute(fastify)
 registerConfigRoute(fastify)
+registerWaitlistRoute(fastify)
 
 const start = async () => {
   try {

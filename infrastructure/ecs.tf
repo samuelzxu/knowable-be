@@ -49,10 +49,6 @@ locals {
     ELEVENLABS_DEFAULT_VOICE_ID         = var.elevenlabs_default_voice_id
     DYNAMODB_TABLE_SESSIONS             = aws_dynamodb_table.sessions.name
     DYNAMODB_TABLE_MESSAGES             = aws_dynamodb_table.messages.name
-    DYNAMODB_TABLE_TELEMETRY            = aws_dynamodb_table.telemetry.name
-    DYNAMODB_TABLE_HINTS                = aws_dynamodb_table.hints.name
-    DYNAMODB_TABLE_PROBLEMS             = aws_dynamodb_table.problems.name
-    DYNAMODB_TABLE_GRADES               = aws_dynamodb_table.grades.name
     DYNAMODB_TABLE_QUOTA                = aws_dynamodb_table.quota.name
     DYNAMODB_TABLE_CONFIG               = aws_dynamodb_table.config.name
     DAILY_HINT_QUOTA_PER_USER           = tostring(var.daily_hint_quota_per_user)

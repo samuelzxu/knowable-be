@@ -11,10 +11,7 @@ if (process.env["LOCAL_DEV"] === "1") {
 
 import { handler as hintHandler } from "../handlers/hint.js";
 import { handler as sessionsHandler } from "../handlers/sessions.js";
-import { handler as gradesHandler } from "../handlers/grades.js";
-import { handler as telemetryHandler } from "../handlers/telemetry.js";
 import { handler as configHandler } from "../handlers/config.js";
-import { handler as waitlistHandler } from "../handlers/waitlist.js";
 
 const app = express();
 app.use(express.json());
@@ -79,11 +76,7 @@ app.post("/hint", (req, res) => { void handleLambda(hintHandler, req, res); });
 app.post("/sessions", (req, res) => { void handleLambda(sessionsHandler, req, res); });
 app.patch("/sessions/:id", (req, res) => { void handleLambda(sessionsHandler, req, res, { id: req.params["id"] ?? "" }); });
 app.get("/sessions", (req, res) => { void handleLambda(sessionsHandler, req, res); });
-app.post("/grades", (req, res) => { void handleLambda(gradesHandler, req, res); });
-app.get("/grades", (req, res) => { void handleLambda(gradesHandler, req, res); });
-app.post("/telemetry", (req, res) => { void handleLambda(telemetryHandler, req, res); });
 app.get("/config", (req, res) => { void handleLambda(configHandler, req, res); });
-app.post("/waitlist", (req, res) => { void handleLambda(waitlistHandler, req, res); });
 
 const PORT = parseInt(process.env["PORT"] ?? "3000", 10);
 app.listen(PORT, () => {
