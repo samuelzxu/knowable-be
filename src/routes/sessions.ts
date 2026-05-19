@@ -29,8 +29,27 @@ export function registerSessionsRoutes(fastify: FastifyInstance): void {
     const userId = req.userId;
     if (!userId) return reply.code(401).send({ error: "unauthorized" });
 
-    const sessionId = randomUUID();
-    const now = new Date().toISOString();
+    // Client may pass a UUID it has already minted locally (so the
+    // CDSession.id and server sessionId match for clean upsert /
+    // hydration round-tripping). If absent, fall back to a fresh
+    // server-side UUID — preserves backward compatibility with any
+    // caller that doesn't pre-mint.
+    const body = (req.body ?? {}) as { sessionId?: string; startedAt?: string };
+    const sessionId =
+      typeof body.sessionId === "string" && body.sessionId.length > 0
+        ? body.sessionId
+        : randomUUID();
+    const now = body.startedAt ?? new Date().toISOString();
+
+    // Idempotent on the client-provided sessionId — if a row already
+    // exists (re-issued from a flaky network retry, or from another
+    // device's earlier POST), return the existing record verbatim so
+    // we don't clobber lifecycle state set by a subsequent PATCH.
+    const existing = await getSession(userId, sessionId);
+    if (existing) {
+      return reply.code(200).send(existing);
+    }
+
     // Initialize status explicitly so the row is consistent with the
     // PATCH-driven lifecycle transitions (active -> paused -> ended).
     // Legacy rows without `status` are read as "active" by clients,
