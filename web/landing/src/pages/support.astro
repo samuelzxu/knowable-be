@@ -1,0 +1,98 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Footer from "../components/Footer.astro";
+
+const lastUpdated = "May 2026";
+---
+
+<BaseLayout
+  title="Support — Knowable"
+  description="How to get help with Knowable, the AI study companion for K–12 students. Contact, troubleshooting, and common questions."
+>
+  <article class="py-16 sm:py-24">
+    <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+      <header class="mb-12">
+        <h1 class="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-3">
+          Support
+        </h1>
+        <p class="text-slate-500 dark:text-slate-400 text-sm">Last updated: {lastUpdated}</p>
+      </header>
+
+      <div class="prose prose-slate dark:prose-invert max-w-none space-y-8 text-slate-700 dark:text-slate-300 leading-relaxed">
+
+        <section>
+          <h2 class="text-xl font-semibold text-slate-900 dark:text-white mb-3">Get in touch</h2>
+          <p>
+            The fastest way to reach us is email. We're a small team — every message is read by a real person, usually within one business day.
+          </p>
+          <p class="mt-3">
+            <strong>General support:</strong> <a href="mailto:support@knowable.ca" class="text-milo-500 hover:underline">support@knowable.ca</a><br />
+            <strong>Privacy &amp; data requests:</strong> <a href="mailto:privacy@knowable.ca" class="text-milo-500 hover:underline">privacy@knowable.ca</a>
+          </p>
+        </section>
+
+        <section>
+          <h2 class="text-xl font-semibold text-slate-900 dark:text-white mb-3">Before you write</h2>
+          <p>
+            A few quick things to check that solve most issues:
+          </p>
+          <ul class="list-disc pl-6 mt-3 space-y-2">
+            <li>
+              <strong>Camera or microphone not working?</strong> Open <em>System Settings → Privacy &amp; Security</em>, then check that Knowable has permission under <em>Camera</em>, <em>Microphone</em>, and (if you're using window sharing) <em>Screen &amp; System Audio Recording</em>. After granting Screen Recording for the first time, you need to fully quit Knowable and reopen it.
+            </li>
+            <li>
+              <strong>Continuity Camera not appearing?</strong> Your iPhone needs to be running iOS 16 or later, signed in to the same Apple ID, with Bluetooth and Wi-Fi on. It also needs to be near your Mac and locked.
+            </li>
+            <li>
+              <strong>Sign in with Apple looping?</strong> Sign out (gear icon → Sign Out) and try again. If the loop persists, try email sign-up instead and let us know — that's a bug we want to hear about.
+            </li>
+            <li>
+              <strong>Milo not responding?</strong> Check that you're online. Knowable needs an internet connection for tutoring sessions (camera and microphone work offline, but the AI tutor does not).
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2 class="text-xl font-semibold text-slate-900 dark:text-white mb-3">Reporting a bug</h2>
+          <p>
+            When something goes wrong, the details below help us fix it quickly. You don't need to know any of these to write us — just include what you can.
+          </p>
+          <ul class="list-disc pl-6 mt-3 space-y-2">
+            <li>What you were doing when it happened (e.g. "starting a new session", "signing in with Apple")</li>
+            <li>What you expected vs. what actually happened</li>
+            <li>Your macOS version (Apple menu → About This Mac)</li>
+            <li>Knowable version (Knowable menu → About Knowable)</li>
+            <li>A screenshot or screen recording if the issue is visual</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2 class="text-xl font-semibold text-slate-900 dark:text-white mb-3">Account &amp; data</h2>
+          <p>
+            To delete your account or request a copy of the data we have about you, email <a href="mailto:privacy@knowable.ca" class="text-milo-500 hover:underline">privacy@knowable.ca</a>. We respond within 30 days as required under Canadian privacy law (PIPEDA).
+          </p>
+          <p class="mt-3">
+            For a full picture of what we do and don't collect, see the <a href="/privacy" class="text-milo-500 hover:underline">Privacy Policy</a>.
+          </p>
+        </section>
+
+        <section>
+          <h2 class="text-xl font-semibold text-slate-900 dark:text-white mb-3">For parents and educators</h2>
+          <p>
+            If you're an educator interested in using Knowable with your class, or a parent with questions about how Milo works with your kid's homework, write to <a href="mailto:support@knowable.ca" class="text-milo-500 hover:underline">support@knowable.ca</a> with a short note about your context. We'll route you to the right person.
+          </p>
+        </section>
+
+        <section>
+          <h2 class="text-xl font-semibold text-slate-900 dark:text-white mb-3">Status</h2>
+          <p>
+            If Knowable seems down for everyone — sign-in failing, Milo not loading at all — that's almost certainly something on our end. Email <a href="mailto:support@knowable.ca" class="text-milo-500 hover:underline">support@knowable.ca</a> and we'll confirm and post an update.
+          </p>
+        </section>
+
+      </div>
+    </div>
+  </article>
+
+  <Footer slot="footer" />
+</BaseLayout>
