@@ -16,6 +16,12 @@ const PatchSessionSchema = z.object({
   hintsCount: z.number().optional(),
   problemsCount: z.number().optional(),
   avgTimeToSolveMs: z.number().optional(),
+  // Lifecycle state (added to support pause/resume across devices).
+  // Client patches `{ status: "paused", pausedAt, lastUnderstanding }`
+  // on pause, and `{ status: "ended", endedAt, ... }` on end.
+  status: z.enum(["active", "paused", "ended"]).optional(),
+  pausedAt: z.string().optional(),
+  lastUnderstanding: z.string().optional(),
 });
 
 export function registerSessionsRoutes(fastify: FastifyInstance): void {
@@ -25,8 +31,12 @@ export function registerSessionsRoutes(fastify: FastifyInstance): void {
 
     const sessionId = randomUUID();
     const now = new Date().toISOString();
-    await putSession({ userId, sessionId, startedAt: now });
-    return reply.code(201).send({ sessionId, userId, startedAt: now });
+    // Initialize status explicitly so the row is consistent with the
+    // PATCH-driven lifecycle transitions (active -> paused -> ended).
+    // Legacy rows without `status` are read as "active" by clients,
+    // but new rows should carry the explicit value.
+    await putSession({ userId, sessionId, startedAt: now, status: "active" });
+    return reply.code(201).send({ sessionId, userId, startedAt: now, status: "active" });
   });
 
   fastify.patch<{ Params: { id: string } }>(
@@ -47,12 +57,20 @@ export function registerSessionsRoutes(fastify: FastifyInstance): void {
       }
       const updates = parsed.data;
 
+      // Partial-update semantics: only the fields the caller passed
+      // get overwritten. The previous implementation defaulted
+      // `endedAt` to `now()` on any PATCH, which would inadvertently
+      // end a session whenever the client patched anything else
+      // (e.g. a pause). Each field is now opt-in.
       const updated = {
         ...existing,
-        endedAt: updates.endedAt ?? new Date().toISOString(),
-        hintsCount: updates.hintsCount ?? existing.hintsCount,
-        problemsCount: updates.problemsCount ?? existing.problemsCount,
-        avgTimeToSolveMs: updates.avgTimeToSolveMs ?? existing.avgTimeToSolveMs,
+        ...(updates.endedAt !== undefined && { endedAt: updates.endedAt }),
+        ...(updates.hintsCount !== undefined && { hintsCount: updates.hintsCount }),
+        ...(updates.problemsCount !== undefined && { problemsCount: updates.problemsCount }),
+        ...(updates.avgTimeToSolveMs !== undefined && { avgTimeToSolveMs: updates.avgTimeToSolveMs }),
+        ...(updates.status !== undefined && { status: updates.status }),
+        ...(updates.pausedAt !== undefined && { pausedAt: updates.pausedAt }),
+        ...(updates.lastUnderstanding !== undefined && { lastUnderstanding: updates.lastUnderstanding }),
       };
       await putSession(updated);
       return reply.code(200).send(updated);

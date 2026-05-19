@@ -19,6 +19,44 @@ resource "aws_dynamodb_table" "sessions" {
   }
 }
 
+# Append-only timeline of every event in a session — frame captures,
+# voice queries, understanding updates, hint deliveries, etc. PK on
+# sessionId keeps each session in its own partition; SK is a sortable
+# `${zeroPaddedTimestampMs}#${uuid}` so Queries return in chronological
+# order and concurrent writes never collide. Auth is enforced at the
+# API layer via a GetItem on knowable-sessions for (req.userId, sessionId)
+# before any events read/write.
+#
+# 1y TTL: event-level fidelity matters most for recent sessions
+# (educator analysis, "what was Milo doing last week?"). After a year
+# the events age out; the metadata row in knowable-sessions stays
+# forever so the session list itself never disappears.
+resource "aws_dynamodb_table" "session_events" {
+  name         = "knowable-session-events"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "sessionId"
+  range_key    = "sk"
+
+  attribute {
+    name = "sessionId"
+    type = "S"
+  }
+
+  attribute {
+    name = "sk"
+    type = "S"
+  }
+
+  ttl {
+    attribute_name = "ttl"
+    enabled        = true
+  }
+
+  point_in_time_recovery {
+    enabled = true
+  }
+}
+
 # Holds both per-user (PK = userId) and global (PK = "knowable-quota#GLOBAL") rows.
 # TTL expires rows ~2 days after creation so the table stays tiny.
 resource "aws_dynamodb_table" "quota" {

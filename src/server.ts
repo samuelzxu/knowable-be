@@ -16,6 +16,7 @@ import { registerReasonStreamRoute } from './routes/reason-stream.js'
 import { registerHintRoute } from './routes/hint.js'
 import { registerTtsRoute } from './routes/tts.js'
 import { registerSessionsRoutes } from './routes/sessions.js'
+import { registerSessionEventsRoutes } from './routes/session-events.js'
 import { registerMessagesRoute } from './routes/messages.js'
 import { registerContextRoute } from './routes/context.js'
 import { registerConfigRoute } from './routes/config.js'
@@ -66,6 +67,7 @@ registerReasonStreamRoute(fastify)
 registerHintRoute(fastify)
 registerTtsRoute(fastify)
 registerSessionsRoutes(fastify)
+registerSessionEventsRoutes(fastify)
 registerMessagesRoute(fastify)
 registerContextRoute(fastify)
 registerConfigRoute(fastify)

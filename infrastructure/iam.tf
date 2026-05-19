@@ -3,6 +3,7 @@ data "aws_caller_identity" "current" {}
 locals {
   dynamo_table_arns = [
     aws_dynamodb_table.sessions.arn,
+    aws_dynamodb_table.session_events.arn,
     aws_dynamodb_table.quota.arn,
     aws_dynamodb_table.config.arn,
     aws_dynamodb_table.waitlist.arn,

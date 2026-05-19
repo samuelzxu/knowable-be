@@ -48,6 +48,7 @@ locals {
     ELEVENLABS_SECRET_NAME              = aws_secretsmanager_secret.elevenlabs.name
     ELEVENLABS_DEFAULT_VOICE_ID         = var.elevenlabs_default_voice_id
     DYNAMODB_TABLE_SESSIONS             = aws_dynamodb_table.sessions.name
+    DYNAMODB_TABLE_SESSION_EVENTS       = aws_dynamodb_table.session_events.name
     DYNAMODB_TABLE_MESSAGES             = aws_dynamodb_table.messages.name
     DYNAMODB_TABLE_QUOTA                = aws_dynamodb_table.quota.name
     DYNAMODB_TABLE_CONFIG               = aws_dynamodb_table.config.name
